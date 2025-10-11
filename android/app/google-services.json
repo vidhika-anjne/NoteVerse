@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "672978419381",
+    "project_id": "noteverse-d7eb2",
+    "storage_bucket": "noteverse-d7eb2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672978419381:android:2c680aa8da686466dc88fc",
+        "android_client_info": {
+          "package_name": "com.example.notes_sharing"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "672978419381-jloh6ojd76mucg4o6busnsu0v8f1b8tb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXOROMkWVQY_1ijkIZekwuYReZ2cs1Yac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672978419381-jloh6ojd76mucg4o6busnsu0v8f1b8tb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "672978419381-mjvfcf8c1kifvqu0okgj7n3f0bu3kig8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.notesSharing"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
