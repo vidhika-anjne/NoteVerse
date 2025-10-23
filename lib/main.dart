@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:notes_sharing/pages/branch_subject_selection_page.dart';
+import 'package:notes_sharing/pages/notes_list_page.dart';
 import 'firebase_options.dart'; // auto-generated from flutterfire configure
 import 'auth/login_page.dart'; // we’ll make this next
 
@@ -18,7 +20,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      // home: BranchSubjectSelectionPage(),
+      home: LoginPage()
     );
   }
 }

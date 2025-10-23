@@ -48,6 +48,8 @@ class DefaultFirebaseOptions {
     authDomain: 'noteverse-d7eb2.firebaseapp.com',
     storageBucket: 'noteverse-d7eb2.firebasestorage.app',
     measurementId: 'G-WXD4B23ZKV',
+    databaseURL: 'https://noteverse-d7eb2-default-rtdb.firebaseio.com',
+
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -56,6 +58,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '672978419381',
     projectId: 'noteverse-d7eb2',
     storageBucket: 'noteverse-d7eb2.firebasestorage.app',
+    databaseURL: 'https://noteverse-d7eb2-default-rtdb.firebaseio.com',
+
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -84,5 +88,7 @@ class DefaultFirebaseOptions {
     authDomain: 'noteverse-d7eb2.firebaseapp.com',
     storageBucket: 'noteverse-d7eb2.firebasestorage.app',
     measurementId: 'G-RWN23HJQ8S',
+    databaseURL: 'https://noteverse-d7eb2-default-rtdb.firebaseio.com',
+
   );
 }
