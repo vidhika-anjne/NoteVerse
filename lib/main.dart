@@ -5,6 +5,7 @@ import 'package:notes_sharing/pages/notes_list_page.dart';
 import 'firebase_options.dart';
 import 'auth/login_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'pages/branch_subject_selection_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,6 +74,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: LoginPage(),
+      // home: BranchSubjectSelectionPage(),
     );
   }
 }

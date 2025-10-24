@@ -103,6 +103,8 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:notes_sharing/pages/main_screen.dart';
+import 'package:notes_sharing/pages/profile_setup_page.dart';
 import 'package:notes_sharing/services/auth_service.dart';
 import 'package:notes_sharing/pages/notes_list_page.dart';  // 👈 Import your Notes page
 import 'signup_page.dart';
@@ -169,7 +171,9 @@ class _LoginPageState extends State<LoginPage> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const BranchSubjectSelectionPage()
+                          // builder: (_) => ProfileSetupPage(userId: user.uid)
+                            builder: (_) => MainScreen()
+
                         ),
                       );
                     } else {

@@ -209,7 +209,7 @@ class _NotesListPageState extends State<NotesListPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 _buildIconButton(
-                                  icon: Icons.summarize_outlined,
+                                  icon: Icons.auto_awesome,
                                   tooltip: 'Generate Summary (AI)',
                                   onPressed: url == null ? null : () => _generateSummary(url, title),
                                   isDark: isDark,
