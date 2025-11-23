@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:notes_sharing/pages/profile_page.dart' show ProfilePage;
+import 'package:notes_sharing/pages/user_public_profile_page.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
@@ -154,7 +156,10 @@ class _NotesListPageState extends State<NotesListPage> {
                       final value = Map<String, dynamic>.from(items[index].value);
                       final title = value['title'] ?? 'Untitled';
                       final url = value['fileUrl'];
-                      final uploadedBy = value['uploadedBy'] ?? 'Unknown';
+                      final uploaderName = value['uploaderName'] ?? 'Unknown User';
+                      final uploaderPhoto = value['uploaderPhoto'] ?? '';
+                      final uploaderId = value['uploadedBy'] ?? '';
+
                       final ts = value['timestamp'] ?? 0;
 
                       return Container(
@@ -168,17 +173,29 @@ class _NotesListPageState extends State<NotesListPage> {
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: isDark ? Colors.blue.shade800 : Colors.blue.shade50,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.description,
-                                color: isDark ? Colors.blue.shade200 : Colors.blue.shade600,
+
+                            // 🔥 USER AVATAR – click to open profile
+                            leading: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => UserPublicProfilePage(userId: uploaderId),
+                                  ),
+                                );
+                              },
+                              child: CircleAvatar(
+                                radius: 22,
+                                backgroundImage:
+                                uploaderPhoto.isNotEmpty ? NetworkImage(uploaderPhoto) : null,
+                                backgroundColor: Colors.grey.shade300,
+                                child: uploaderPhoto.isEmpty
+                                    ? const Icon(Icons.person, color: Colors.white)
+                                    : null,
                               ),
                             ),
+
+                            // 🔥 TITLE
                             title: Text(
                               title,
                               style: TextStyle(
@@ -186,11 +203,13 @@ class _NotesListPageState extends State<NotesListPage> {
                                 color: isDark ? Colors.white : Colors.grey[800],
                               ),
                             ),
+
+                            // 🔥 SUBTITLE (Uploader + Timestamp)
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'By: $uploadedBy',
+                                  'By: $uploaderName',
                                   style: TextStyle(
                                     color: isDark ? Colors.white70 : Colors.grey[600],
                                     fontSize: 12,
@@ -205,30 +224,34 @@ class _NotesListPageState extends State<NotesListPage> {
                                 ),
                               ],
                             ),
+
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 _buildIconButton(
                                   icon: Icons.auto_awesome,
                                   tooltip: 'Generate Summary (AI)',
-                                  onPressed: url == null ? null : () => _generateSummary(url, title),
+                                  onPressed:
+                                  url == null ? null : () => _generateSummary(url, title),
                                   isDark: isDark,
                                   color: Colors.purple,
                                 ),
                                 _buildIconButton(
                                   icon: Icons.open_in_new,
                                   tooltip: 'Open',
-                                  onPressed: url == null ? null : () => launchUrlString(
-                                    url,
-                                    mode: LaunchMode.externalApplication,
-                                  ),
+                                  onPressed: url == null
+                                      ? null
+                                      : () =>
+                                      launchUrlString(url, mode: LaunchMode.externalApplication),
                                   isDark: isDark,
                                   color: Colors.green,
                                 ),
                                 _buildIconButton(
                                   icon: Icons.download,
                                   tooltip: 'Download',
-                                  onPressed: url == null ? null : () {
+                                  onPressed: url == null
+                                      ? null
+                                      : () {
                                     if (kIsWeb) {
                                       _downloadFileWeb(url, '$title.pdf');
                                     }
@@ -241,6 +264,7 @@ class _NotesListPageState extends State<NotesListPage> {
                           ),
                         ),
                       );
+
                     },
                   );
                 },
