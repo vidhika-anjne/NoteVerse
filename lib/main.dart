@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'auth/login_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/branch_subject_selection_page.dart';
+import 'pages/landing_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,8 +74,9 @@ class MyApp extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
-      home: LoginPage(),
+      // home: LoginPage(),
       // home: BranchSubjectSelectionPage(),
+      home: NoteVerseLandingPage(),
     );
   }
 }

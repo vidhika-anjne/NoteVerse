@@ -1,255 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'notes_list_page.dart';
-//
-// class BranchSubjectSelectionPage extends StatefulWidget {
-//   const BranchSubjectSelectionPage({super.key});
-//
-//   @override
-//   State<BranchSubjectSelectionPage> createState() => _BranchSubjectSelectionPageState();
-// }
-//
-// class _BranchSubjectSelectionPageState extends State<BranchSubjectSelectionPage> {
-//   String? selectedBranch;
-//   String? selectedSubject;
-//
-//   final Map<String, List<String>> subjectsByBranch = {
-//     'cse': ['BT-101', 'BT-102', 'BT-103'],
-//     'it': ['IT-BT101', 'IT-BT102', 'IT-IT501'],
-//     'aiml': ['AL-301', 'AL-401', 'AL-501'],
-//   };
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final branches = subjectsByBranch.keys.toList();
-//     final subjects = selectedBranch != null ? subjectsByBranch[selectedBranch]! : [];
-//
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Select Branch & Subject')),
-//       body: Padding(
-//         padding: const EdgeInsets.all(20.0),
-//         child: Column(
-//           children: [
-//             // 🔹 Dropdown for branch
-//             DropdownButtonFormField<String>(
-//               decoration: const InputDecoration(labelText: 'Select Branch'),
-//               value: selectedBranch,
-//               items: branches
-//                   .map((b) => DropdownMenuItem(value: b, child: Text(b.toUpperCase())))
-//                   .toList(),
-//               onChanged: (val) {
-//                 setState(() {
-//                   selectedBranch = val;
-//                   selectedSubject = null;
-//                 });
-//               },
-//             ),
-//             const SizedBox(height: 20),
-//             // 🔹 Dropdown for subject
-//             DropdownButtonFormField<String>(
-//               decoration: const InputDecoration(labelText: 'Select Subject'),
-//               value: selectedSubject,
-//               items: subjects
-//                   .map((s) => DropdownMenuItem<String>(
-//                 value: s,
-//                 child: Text(s),
-//               ))
-//                   .toList(),
-//               onChanged: (val) {
-//                 setState(() {
-//                   selectedSubject = val;
-//                 });
-//               },
-//             ),
-//             const SizedBox(height: 30),
-//             ElevatedButton.icon(
-//               onPressed: (selectedBranch != null && selectedSubject != null)
-//                   ? () {
-//                 Navigator.pushReplacement(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (_) => NotesListPage(
-//                       universityId: 'rgpv',
-//                       degreeId: 'btech',
-//                       branchId: selectedBranch!,
-//                       subjectId: selectedSubject!,
-//                     ),
-//                   ),
-//                 );
-//               }
-//                   : null,
-//               icon: const Icon(Icons.arrow_forward),
-//               label: const Text('Continue'),
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// ------------------------------------------------------------------------------------------
-
-// import 'package:flutter/material.dart';
-// import 'package:firebase_database/firebase_database.dart';
-// import 'notes_list_page.dart';
-//
-// class BranchSubjectSelectionPage extends StatefulWidget {
-//   const BranchSubjectSelectionPage({super.key});
-//
-//   @override
-//   State<BranchSubjectSelectionPage> createState() => _BranchSubjectSelectionPageState();
-// }
-//
-// class _BranchSubjectSelectionPageState extends State<BranchSubjectSelectionPage> {
-//   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref('universities/rgpv/degrees/btech/branches');
-//
-//   String? selectedYear;
-//   String? selectedSemester;
-//   String? selectedBranchId;
-//   String? selectedSubjectId;
-//
-//   List<String> years = ['1', '2', '3', '4'];
-//   List<String> semesters = ['1', '2', '3', '4', '5', '6', '7', '8'];
-//
-//   Map<String, dynamic> branches = {};
-//   Map<String, dynamic> subjects = {};
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _fetchBranches();
-//   }
-//
-//   Future<void> _fetchBranches() async {
-//     final snapshot = await _dbRef.get();
-//     if (snapshot.exists) {
-//       setState(() {
-//         branches = Map<String, dynamic>.from(snapshot.value as Map);
-//       });
-//     }
-//   }
-//
-//   Future<void> _fetchSubjects(String branchId) async {
-//     final snapshot = await _dbRef.child('$branchId/subjects').get();
-//     if (snapshot.exists) {
-//       setState(() {
-//         subjects = Map<String, dynamic>.from(snapshot.value as Map);
-//       });
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Filter subjects by selected year and semester
-//     final filteredSubjects = subjects.entries.where((entry) {
-//       final val = Map<String, dynamic>.from(entry.value);
-//       final yearMatch = selectedYear == null || val['year'].toString() == selectedYear;
-//       final semMatch = selectedSemester == null || val['semester'].toString() == selectedSemester;
-//       return yearMatch && semMatch;
-//     }).toList();
-//
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Select Year, Branch & Subject')),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: SingleChildScrollView(
-//           child: Column(
-//             children: [
-//               DropdownButtonFormField<String>(
-//                 decoration: const InputDecoration(labelText: 'Select Year'),
-//                 value: selectedYear,
-//                 items: years.map((y) => DropdownMenuItem(value: y, child: Text('Year $y'))).toList(),
-//                 onChanged: (val) {
-//                   setState(() {
-//                     selectedYear = val;
-//                     selectedSemester = null;
-//                     selectedBranchId = null;
-//                     selectedSubjectId = null;
-//                   });
-//                 },
-//               ),
-//               const SizedBox(height: 16),
-//               if (selectedYear != null)
-//                 DropdownButtonFormField<String>(
-//                   decoration: const InputDecoration(labelText: 'Select Semester'),
-//                   value: selectedSemester,
-//                   items: semesters.map((s) => DropdownMenuItem(value: s, child: Text('Semester $s'))).toList(),
-//                   onChanged: (val) {
-//                     setState(() {
-//                       selectedSemester = val;
-//                       selectedBranchId = null;
-//                       selectedSubjectId = null;
-//                     });
-//                   },
-//                 ),
-//               const SizedBox(height: 16),
-//               if (selectedSemester != null)
-//                 DropdownButtonFormField<String>(
-//                   decoration: const InputDecoration(labelText: 'Select Branch'),
-//                   value: selectedBranchId,
-//                   items: branches.entries
-//                       .map((e) => DropdownMenuItem(
-//                     value: e.key,
-//                     child: Text((e.value['name'] ?? e.key).toString()),
-//                   ))
-//                       .toList(),
-//                   onChanged: (val) async {
-//                     setState(() {
-//                       selectedBranchId = val;
-//                       selectedSubjectId = null;
-//                       subjects.clear();
-//                     });
-//                     if (val != null) await _fetchSubjects(val);
-//                   },
-//                 ),
-//               const SizedBox(height: 16),
-//               if (selectedBranchId != null && subjects.isNotEmpty)
-//                 DropdownButtonFormField<String>(
-//                   decoration: const InputDecoration(labelText: 'Select Subject'),
-//                   value: selectedSubjectId,
-//                   items: filteredSubjects
-//                       .map(
-//                         (entry) => DropdownMenuItem(
-//                       value: entry.key,
-//                       child: Text(entry.value['name'] ?? entry.key),
-//                     ),
-//                   )
-//                       .toList(),
-//                   onChanged: (val) {
-//                     setState(() => selectedSubjectId = val);
-//                   },
-//                 ),
-//               const SizedBox(height: 24),
-//               ElevatedButton.icon(
-//                 onPressed: (selectedBranchId != null && selectedSubjectId != null)
-//                     ? () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (_) => NotesListPage(
-//                         // universityId: 'rgpv',
-//                         degreeId: 'btech',
-//                         branchId: selectedBranchId!,
-//                         subjectId: selectedSubjectId!,
-//                       ),
-//                     ),
-//                   );
-//                 }
-//                     : null,
-//                 icon: const Icon(Icons.arrow_forward),
-//                 label: const Text('View Notes'),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// --------------------------------------------------------------------------------------
-
-
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'notes_list_page.dart';
@@ -272,7 +20,6 @@ class _BranchSubjectSelectionPageState
   String? selectedBranchId;
   String? selectedSubjectId;
 
-  // dynamic lists
   List<String> yearOptions = ['1', '2', '3', '4'];
   List<String> semesterOptions = [];
   Map<String, dynamic> branches = {};
@@ -284,7 +31,6 @@ class _BranchSubjectSelectionPageState
     _loadBranches();
   }
 
-  // 🔹 Load all branches once
   Future<void> _loadBranches() async {
     final snapshot = await _dbRef.get();
     if (snapshot.exists) {
@@ -294,7 +40,6 @@ class _BranchSubjectSelectionPageState
     }
   }
 
-  // 🔹 Load subjects for the selected branch
   Future<void> _loadSubjects(String branchId) async {
     final snapshot = await _dbRef.child('$branchId/subjects').get();
     if (snapshot.exists) {
@@ -308,7 +53,6 @@ class _BranchSubjectSelectionPageState
     }
   }
 
-  // 🔹 Auto-adjust semesters based on year
   void _updateSemestersForYear(String year) {
     switch (year) {
       case '1':
@@ -328,9 +72,19 @@ class _BranchSubjectSelectionPageState
     }
   }
 
+  void _resetSelections() {
+    setState(() {
+      selectedYear = null;
+      selectedSemester = null;
+      selectedBranchId = null;
+      selectedSubjectId = null;
+      semesterOptions = [];
+      subjects = {};
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 🔹 Filter subjects based on selected year & semester
     final filteredSubjects = subjects.entries.where((entry) {
       final val = Map<String, dynamic>.from(entry.value);
       final yearMatch = selectedYear == null ||
@@ -341,118 +95,455 @@ class _BranchSubjectSelectionPageState
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Select Course')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+      backgroundColor: const Color(0xFF0F172A),
+      appBar: AppBar(
+        title: const Text(
+          'Select Your Course',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: const Color(0xFF1A2332),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          if (selectedYear != null)
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white70),
+              onPressed: _resetSelections,
+              tooltip: 'Reset Selection',
+            ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Progress Indicator
+            _buildProgressIndicator(),
+            const SizedBox(height: 32),
+
+            // Year Selection
+            _buildSectionHeader(
+              title: 'Select Year',
+              subtitle: 'Choose your academic year',
+              icon: Icons.school,
+            ),
+            const SizedBox(height: 16),
+            _buildYearGrid(),
+            const SizedBox(height: 32),
+
+            // Semester Selection
+            if (selectedYear != null) ...[
+              _buildSectionHeader(
+                title: 'Select Semester',
+                subtitle: 'Choose your current semester',
+                icon: Icons.date_range,
+              ),
+              const SizedBox(height: 16),
+              _buildSemesterGrid(),
+              const SizedBox(height: 32),
+            ],
+
+            // Branch Selection
+            if (selectedSemester != null) ...[
+              _buildSectionHeader(
+                title: 'Select Branch',
+                subtitle: 'Choose your department',
+                icon: Icons.architecture,
+              ),
+              const SizedBox(height: 16),
+              _buildBranchGrid(),
+              const SizedBox(height: 32),
+            ],
+
+            // Subject Selection
+            if (selectedBranchId != null && subjects.isNotEmpty) ...[
+              _buildSectionHeader(
+                title: 'Select Subject',
+                subtitle: 'Choose your subject',
+                icon: Icons.menu_book,
+              ),
+              const SizedBox(height: 16),
+              _buildSubjectGrid(filteredSubjects),
+              const SizedBox(height: 32),
+            ],
+
+            // Continue Button
+            if (selectedBranchId != null && selectedSubjectId != null) ...[
+              _buildContinueButton(),
+              const SizedBox(height: 20), // Extra padding at bottom
+            ],
+
+            // Add some extra space at the bottom to ensure scrolling works
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    final totalSteps = 4;
+    var completedSteps = 0;
+    if (selectedYear != null) completedSteps++;
+    if (selectedSemester != null) completedSteps++;
+    if (selectedBranchId != null) completedSteps++;
+    if (selectedSubjectId != null) completedSteps++;
+
+    return Column(
+      children: [
+        LinearProgressIndicator(
+          value: completedSteps / totalSteps,
+          backgroundColor: const Color(0xFF334155),
+          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+          borderRadius: BorderRadius.circular(10),
+          minHeight: 8,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Step $completedSteps of $totalSteps',
+          style: const TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFF10B981).withOpacity(0.3),
+            ),
+          ),
+          child: Icon(icon, color: const Color(0xFF10B981), size: 20),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildYearGrid() {
+    return SizedBox(
+      height: 80, // Fixed height for year grid
+      child: GridView.builder(
+        scrollDirection: Axis.horizontal,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 1,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.7,
+        ),
+        itemCount: yearOptions.length,
+        itemBuilder: (context, index) {
+          final year = yearOptions[index];
+          final isSelected = selectedYear == year;
+          return _buildSelectionCard(
+            title: 'Year $year',
+            isSelected: isSelected,
+            onTap: () {
+              setState(() {
+                selectedYear = year;
+                selectedSemester = null;
+                selectedBranchId = null;
+                selectedSubjectId = null;
+                _updateSemestersForYear(year);
+              });
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSemesterGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 2.5,
+      ),
+      itemCount: semesterOptions.length,
+      itemBuilder: (context, index) {
+        final semester = semesterOptions[index];
+        final isSelected = selectedSemester == semester;
+        return _buildSelectionCard(
+          title: 'Semester $semester',
+          subtitle: 'Year $selectedYear',
+          isSelected: isSelected,
+          onTap: () {
+            setState(() {
+              selectedSemester = semester;
+              selectedBranchId = null;
+              selectedSubjectId = null;
+            });
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBranchGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.5,
+      ),
+      itemCount: branches.entries.length,
+      itemBuilder: (context, index) {
+        final branch = branches.entries.elementAt(index);
+        final isSelected = selectedBranchId == branch.key;
+        return _buildSelectionCard(
+          title: branch.value['name'] ?? branch.key,
+          subtitle: 'Department',
+          isSelected: isSelected,
+          onTap: () async {
+            setState(() {
+              selectedBranchId = branch.key;
+              selectedSubjectId = null;
+              subjects.clear();
+            });
+            await _loadSubjects(branch.key);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSubjectGrid(List<MapEntry<String, dynamic>> filteredSubjects) {
+    if (filteredSubjects.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A2332),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF334155)),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: Colors.grey.shade600,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No subjects found',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No subjects available for Year $selectedYear, Semester $selectedSemester',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.8,
+      ),
+      itemCount: filteredSubjects.length,
+      itemBuilder: (context, index) {
+        final subject = filteredSubjects[index];
+        final isSelected = selectedSubjectId == subject.key;
+        final subjectData = Map<String, dynamic>.from(subject.value);
+
+        return _buildSelectionCard(
+          title: subjectData['name'] ?? subject.key,
+          subtitle: 'Subject',
+          isSelected: isSelected,
+          onTap: () {
+            setState(() {
+              selectedSubjectId = subject.key;
+            });
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSelectionCard({
+    required String title,
+    String? subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 2,
+      color: isSelected ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFF1A2332),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSelected ? const Color(0xFF10B981) : const Color(0xFF334155),
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔸 Year dropdown
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Select Year'),
-                value: selectedYear,
-                items: yearOptions
-                    .map((y) =>
-                    DropdownMenuItem(value: y, child: Text('Year $y')))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() {
-                    selectedYear = val;
-                    selectedSemester = null;
-                    selectedBranchId = null;
-                    selectedSubjectId = null;
-                    _updateSemestersForYear(val!);
-                  });
-                },
+              Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? const Color(0xFF10B981) : Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 16),
-
-              // 🔸 Semester dropdown (only valid ones)
-              if (selectedYear != null)
-                DropdownButtonFormField<String>(
-                  decoration:
-                  const InputDecoration(labelText: 'Select Semester'),
-                  value: selectedSemester,
-                  items: semesterOptions
-                      .map((s) => DropdownMenuItem(
-                      value: s, child: Text('Semester $s')))
-                      .toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      selectedSemester = val;
-                      selectedBranchId = null;
-                      selectedSubjectId = null;
-                    });
-                  },
+              if (subtitle != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 11,
+                  ),
                 ),
-              const SizedBox(height: 16),
-
-              // 🔸 Branch dropdown
-              if (selectedSemester != null)
-                DropdownButtonFormField<String>(
-                  decoration:
-                  const InputDecoration(labelText: 'Select Branch'),
-                  value: selectedBranchId,
-                  items: branches.entries
-                      .map((e) => DropdownMenuItem(
-                    value: e.key,
-                    child:
-                    Text((e.value['name'] ?? e.key).toString()),
-                  ))
-                      .toList(),
-                  onChanged: (val) async {
-                    setState(() {
-                      selectedBranchId = val;
-                      selectedSubjectId = null;
-                      subjects.clear();
-                    });
-                    if (val != null) await _loadSubjects(val);
-                  },
-                ),
-              const SizedBox(height: 16),
-
-              // 🔸 Subject dropdown (filtered)
-              if (selectedBranchId != null && subjects.isNotEmpty)
-                DropdownButtonFormField<String>(
-                  decoration:
-                  const InputDecoration(labelText: 'Select Subject'),
-                  value: selectedSubjectId,
-                  items: filteredSubjects
-                      .map((entry) => DropdownMenuItem(
-                    value: entry.key,
-                    child:
-                    Text(entry.value['name'] ?? entry.key),
-                  ))
-                      .toList(),
-                  onChanged: (val) {
-                    setState(() => selectedSubjectId = val);
-                  },
-                ),
-              const SizedBox(height: 24),
-
-              // 🔸 Continue button
-              ElevatedButton.icon(
-                onPressed: (selectedBranchId != null &&
-                    selectedSubjectId != null)
-                    ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => NotesListPage(
-                        degreeId: 'btech',
-                        branchId: selectedBranchId!,
-                        subjectId: selectedSubjectId!,
-                        // universityId: '', // optional placeholder
-                      ),
+              ],
+              if (isSelected) ...[
+                const Spacer(),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF10B981),
+                      shape: BoxShape.circle,
                     ),
-                  );
-                }
-                    : null,
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('View Notes'),
-              ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF10B981), Color(0xFF059669)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => NotesListPage(
+                degreeId: 'btech',
+                branchId: selectedBranchId!,
+                subjectId: selectedSubjectId!,
+              ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'View Notes',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

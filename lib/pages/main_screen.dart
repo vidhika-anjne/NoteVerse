@@ -41,24 +41,28 @@ class _MainScreenState extends State<MainScreen> {
     Icons.home_outlined,
     Icons.school_outlined,
     Icons.bookmark_outline,
-    Icons.person_outline,
+    Icons.person_outlined,
   ];
+
+  // Green color palette
+  final Color _primaryGreen = const Color(0xFF10B981);
+  final Color _darkGreen = const Color(0xFF059669);
+  final Color _lightGreen = const Color(0xFF34D399);
 
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = MediaQuery.of(context).size.width >= 768;
-    final Color primaryColor = Theme.of(context).colorScheme.primary;
-    final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
-    final Color surfaceColor = Theme.of(context).colorScheme.surface;
+    final Color backgroundColor = const Color(0xFF0F172A);
+    final Color surfaceColor = const Color(0xFF1A2332);
 
     if (isDesktop) {
-      return _buildDesktopLayout(primaryColor, backgroundColor, surfaceColor);
+      return _buildDesktopLayout(backgroundColor, surfaceColor);
     } else {
-      return _buildMobileLayout(primaryColor, backgroundColor);
+      return _buildMobileLayout(backgroundColor);
     }
   }
 
-  Widget _buildDesktopLayout(Color primaryColor, Color backgroundColor, Color surfaceColor) {
+  Widget _buildDesktopLayout(Color backgroundColor, Color surfaceColor) {
     return Scaffold(
       body: Row(
         children: [
@@ -101,10 +105,7 @@ class _MainScreenState extends State<MainScreen> {
                         height: 40,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              primaryColor,
-                              Colors.purple.shade600,
-                            ],
+                            colors: [_primaryGreen, _darkGreen],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -140,7 +141,7 @@ class _MainScreenState extends State<MainScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         child: Material(
                           color: isSelected
-                              ? primaryColor.withOpacity(0.15)
+                              ? _primaryGreen.withOpacity(0.15)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
                           child: InkWell(
@@ -156,7 +157,7 @@ class _MainScreenState extends State<MainScreen> {
                               decoration: BoxDecoration(
                                 border: isSelected
                                     ? Border.all(
-                                  color: primaryColor.withOpacity(0.3),
+                                  color: _primaryGreen.withOpacity(0.3),
                                   width: 1,
                                 )
                                     : null,
@@ -166,7 +167,7 @@ class _MainScreenState extends State<MainScreen> {
                                 children: [
                                   Icon(
                                     isSelected ? _icons[index] : _outlinedIcons[index],
-                                    color: isSelected ? primaryColor : Colors.white70,
+                                    color: isSelected ? _primaryGreen : Colors.white70,
                                     size: 22,
                                   ),
                                   const SizedBox(width: 12),
@@ -175,7 +176,7 @@ class _MainScreenState extends State<MainScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      color: isSelected ? primaryColor : Colors.white70,
+                                      color: isSelected ? _primaryGreen : Colors.white70,
                                     ),
                                   ),
                                   if (isSelected) ...[
@@ -184,7 +185,7 @@ class _MainScreenState extends State<MainScreen> {
                                       width: 6,
                                       height: 6,
                                       decoration: BoxDecoration(
-                                        color: primaryColor,
+                                        color: _primaryGreen,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -217,10 +218,7 @@ class _MainScreenState extends State<MainScreen> {
                         height: 40,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              Colors.blue.shade400,
-                              Colors.purple.shade400,
-                            ],
+                            colors: [_lightGreen, _primaryGreen],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -317,10 +315,10 @@ class _MainScreenState extends State<MainScreen> {
                           height: 40,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade900,
+                            color: const Color(0xFF1E293B),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.grey.shade700,
+                              color: const Color(0xFF334155),
                             ),
                           ),
                           child: Row(
@@ -356,8 +354,11 @@ class _MainScreenState extends State<MainScreen> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade900,
+                            color: const Color(0xFF1E293B),
                             shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF334155),
+                            ),
                           ),
                           child: IconButton(
                             icon: Icon(
@@ -388,22 +389,24 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildMobileLayout(Color primaryColor, Color backgroundColor) {
+  Widget _buildMobileLayout(Color backgroundColor) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           _titles[_currentIndex],
           style: const TextStyle(
             fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: const Color(0xFF1A2332),
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (_currentIndex == 0) // Only show search on home page
             IconButton(
-              icon: const Icon(Icons.search),
+              icon: const Icon(Icons.search, color: Colors.white70),
               onPressed: () {},
             ),
         ],
@@ -423,20 +426,27 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: const Color(0xFF1A2332),
           border: Border(
             top: BorderSide(
               color: Colors.grey.shade800,
               width: 1,
             ),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          selectedItemColor: primaryColor,
+          selectedItemColor: _primaryGreen,
           unselectedItemColor: Colors.white70,
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
@@ -464,20 +474,17 @@ class _MainScreenState extends State<MainScreen> {
     return BottomNavigationBarItem(
       icon: Container(
         padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.transparent,
         ),
-        child: Icon(outlineIcon, size: 24),
+        child: Icon(outlineIcon, size: 24, color: Colors.white70),
       ),
       activeIcon: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Colors.purple.shade600,
-            ],
+            colors: [_primaryGreen, _darkGreen],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

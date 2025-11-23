@@ -26,7 +26,7 @@ class GeminiService {
                 {
                   "text":
                   "Summarize this file for study notes to be understood and learnt easily.\n"
-                  "Output only plain text without any Markdown formatting, headings, or special symbols:\n$text",
+                      "Output only plain text without any Markdown formatting, headings, or special symbols:\n$text",
                 }
               ]
             }
