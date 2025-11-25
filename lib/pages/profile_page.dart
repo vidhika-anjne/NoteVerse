@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:notes_sharing/pages/profile_setup_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -111,7 +112,13 @@ class _ProfilePageState extends State<ProfilePage> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.pushNamed(context, "/editProfile");
+                  // Navigator.pushNamed(context, "/editProfile");
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProfileSetupPage(userId: user!.uid),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.edit),
                 label: const Text("Edit Profile"),
