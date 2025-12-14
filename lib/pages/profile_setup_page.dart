@@ -117,10 +117,10 @@
 //   }
 // }
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:file_picker/file_picker.dart';
-import '../services/cloudinary_service.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/user_profile_provider.dart';
 import 'main_screen.dart';
 
 class ProfileSetupPage extends StatefulWidget {
@@ -142,9 +142,6 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
   PlatformFile? _pickedFile;
 
   bool _isSaving = false;
-
-  final DatabaseReference _usersRef = FirebaseDatabase.instance.ref('users');
-  final CloudinaryService _cloudinary = CloudinaryService();
 
   // ------------------------------ PICK IMAGE ------------------------------
   Future<void> _pickImage() async {
@@ -170,38 +167,29 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
 
     setState(() => _isSaving = true);
 
-    // ---- Check if Username Exists ----
-    final snapshot = await _usersRef.orderByChild('username').equalTo(username).get();
-    if (snapshot.exists) {
-      setState(() => _isSaving = false);
+    final profileProvider = context.read<UserProfileProvider>();
+
+    final error = await profileProvider.saveProfile(
+      userId: widget.userId,
+      name: name,
+      username: username,
+      role: _role,
+      gender: _gender,
+      linkedin: linkedin,
+      bio: bio,
+      pickedFile: _pickedFile,
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isSaving = false);
+
+    if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username already taken! Choose another.')),
+        SnackBar(content: Text(error)),
       );
       return;
     }
-
-    // ---- Upload Profile Image ----
-    String? photoUrl;
-    if (_pickedFile != null) {
-      photoUrl = await _cloudinary.uploadImage(file: _pickedFile!);
-    }
-
-    final user = FirebaseAuth.instance.currentUser;
-
-    await _usersRef.child(widget.userId).set({
-      'name': name,
-      'username': username,
-      'email': user?.email ?? '',
-      'role': _role,
-      'gender': _gender,
-      'linkedin': linkedin,
-      'bio': bio,
-      'photoUrl': photoUrl ?? '',
-      'savedNotes': [], // EMPTY LIST
-      'createdAt': DateTime.now().millisecondsSinceEpoch,
-    });
-
-    setState(() => _isSaving = false);
 
     Navigator.pushReplacement(
       context,

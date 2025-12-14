@@ -7,7 +7,7 @@ class GeminiService {
 
   Future<String> summarizeText(String text) async {
     if (_apiKey == null || _apiKey!.isEmpty) {
-      print("❌ Gemini API key not found. Check your .env file.");
+      print("❌ Gemini API key not found.");
       return "API key missing";
     }
 
@@ -25,7 +25,7 @@ class GeminiService {
               "parts": [
                 {
                   "text":
-                  "Summarize this file for study notes to be understood and learnt easily.\n"
+                  "Read and summarize the contents of the file for study notes to be understood and learnt easily.\n"
                       "Output only plain text without any Markdown formatting, headings, or special symbols:\n$text",
                 }
               ]

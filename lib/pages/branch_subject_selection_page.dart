@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/notes_provider.dart';
 import 'notes_list_page.dart';
 
 class BranchSubjectSelectionPage extends StatefulWidget {
-  const BranchSubjectSelectionPage({super.key});
+  final void Function(String degreeId, String branchId, String subjectId)? onViewNotes;
+
+  const BranchSubjectSelectionPage({super.key, this.onViewNotes});
 
   @override
   State<BranchSubjectSelectionPage> createState() =>
@@ -12,10 +16,8 @@ class BranchSubjectSelectionPage extends StatefulWidget {
 
 class _BranchSubjectSelectionPageState
     extends State<BranchSubjectSelectionPage> {
-  final DatabaseReference _dbRef =
-  FirebaseDatabase.instance.ref('degrees/btech/branches');
-
   String? selectedYear;
+
   String? selectedSemester;
   String? selectedBranchId;
   String? selectedSubjectId;
@@ -32,25 +34,21 @@ class _BranchSubjectSelectionPageState
   }
 
   Future<void> _loadBranches() async {
-    final snapshot = await _dbRef.get();
-    if (snapshot.exists) {
-      setState(() {
-        branches = Map<String, dynamic>.from(snapshot.value as Map);
-      });
-    }
+    final notesProvider = context.read<NotesProvider>();
+    final loadedBranches = await notesProvider.fetchBranches();
+    if (!mounted) return;
+    setState(() {
+      branches = loadedBranches;
+    });
   }
 
   Future<void> _loadSubjects(String branchId) async {
-    final snapshot = await _dbRef.child('$branchId/subjects').get();
-    if (snapshot.exists) {
-      setState(() {
-        subjects = Map<String, dynamic>.from(snapshot.value as Map);
-      });
-    } else {
-      setState(() {
-        subjects = {};
-      });
-    }
+    final notesProvider = context.read<NotesProvider>();
+    final loadedSubjects = await notesProvider.fetchSubjects(branchId: branchId);
+    if (!mounted) return;
+    setState(() {
+      subjects = loadedSubjects;
+    });
   }
 
   void _updateSemestersForYear(String year) {
@@ -511,16 +509,24 @@ class _BranchSubjectSelectionPageState
       ),
       child: ElevatedButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => NotesListPage(
-                degreeId: 'btech',
-                branchId: selectedBranchId!,
-                subjectId: selectedSubjectId!,
+          if (widget.onViewNotes != null) {
+            widget.onViewNotes!(
+              'btech',
+              selectedBranchId!,
+              selectedSubjectId!,
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NotesListPage(
+                  degreeId: 'btech',
+                  branchId: selectedBranchId!,
+                  subjectId: selectedSubjectId!,
+                ),
               ),
-            ),
-          );
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,

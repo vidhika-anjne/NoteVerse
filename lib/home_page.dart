@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:notes_sharing/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:notes_sharing/providers/auth_provider.dart';
 import 'auth/login_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -7,8 +8,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthService _authService = AuthService();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Welcome to NoteVerse"),
@@ -16,7 +15,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await _authService.signOut();
+              await context.read<AuthProvider>().signOut();
               if (context.mounted) {
                 Navigator.pushReplacement(
                   context,

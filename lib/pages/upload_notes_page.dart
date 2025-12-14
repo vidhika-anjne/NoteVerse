@@ -1,13 +1,11 @@
 // lib/pages/upload_note_page.dart
 
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:uuid/uuid.dart';
-import '../services/cloudinary_service.dart';
-import '../services/database_service.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../providers/upload_provider.dart';
 
 class UploadNotePage extends StatefulWidget {
   final String degreeId;
@@ -30,12 +28,6 @@ class _UploadNotePageState extends State<UploadNotePage> {
   final _tagsCtrl = TextEditingController();
   PlatformFile? _pickedFile;
 
-  double _progress = 0.0;
-  bool _isUploading = false;
-
-  final DatabaseService _dbService = DatabaseService();
-  final CloudinaryService _cloudinary = CloudinaryService();
-
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(withData: true);
     if (result != null) {
@@ -43,16 +35,9 @@ class _UploadNotePageState extends State<UploadNotePage> {
     }
   }
 
-  Future<Map<String, dynamic>?> _getProfile(String uid) async {
-    final snap =
-    await FirebaseDatabase.instance.ref("users/$uid").get();
-
-    if (!snap.exists) return null;
-    return Map<String, dynamic>.from(snap.value as Map);
-  }
-
   Future<void> _startUpload() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final auth = context.read<AuthProvider>();
+    final user = auth.firebaseUser;
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -75,55 +60,26 @@ class _UploadNotePageState extends State<UploadNotePage> {
       return;
     }
 
-    // 🔥 Get uploader profile data
-    final profile = await _getProfile(user.uid);
+    final uploadProvider = context.read<UploadProvider>();
+    final tags = _tagsCtrl.text
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
 
-    if (profile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile not found')),
-      );
-      return;
-    }
+    final success = await uploadProvider.uploadNote(
+      userId: user.uid,
+      degreeId: widget.degreeId,
+      branchId: widget.branchId,
+      subjectId: widget.subjectId,
+      title: _titleCtrl.text.trim(),
+      file: _pickedFile!,
+      tags: tags,
+    );
 
-    final uploaderName = profile["name"] ?? "Unknown User";
-    final uploaderPhoto = profile["photoUrl"] ?? "";
+    if (!mounted) return;
 
-    setState(() {
-      _isUploading = true;
-      _progress = 0.0;
-    });
-
-    final noteId = const Uuid().v4();
-
-    try {
-      // Upload file to Cloudinary
-      final fileUrl = await _cloudinary.uploadFile(
-        file: _pickedFile!,
-        onProgress: (p) => setState(() => _progress = p),
-      );
-
-      if (fileUrl == null) throw Exception("Cloudinary upload failed");
-
-      // Save metadata in Firebase Database
-      await _dbService.saveNoteMetadata(
-        degreeId: widget.degreeId,
-        branchId: widget.branchId,
-        subjectId: widget.subjectId,
-        noteId: noteId,
-        title: _titleCtrl.text.trim(),
-        downloadUrl: fileUrl,
-        uploaderId: user.uid,
-        uploaderName: uploaderName,
-        uploaderPhoto: uploaderPhoto,
-        fileSizeBytes: _pickedFile!.size,
-        fileType: _pickedFile!.extension ?? "file",
-        tags: _tagsCtrl.text
-            .split(',')
-            .map((s) => s.trim())
-            .where((s) => s.isNotEmpty)
-            .toList(),
-      );
-
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("✅ Upload successful")),
       );
@@ -132,14 +88,12 @@ class _UploadNotePageState extends State<UploadNotePage> {
         _pickedFile = null;
         _titleCtrl.clear();
         _tagsCtrl.clear();
-        _progress = 0.0;
       });
-    } catch (e) {
+    } else {
+      final message = uploadProvider.error ?? 'Upload failed';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Upload failed: $e")),
+        SnackBar(content: Text(message)),
       );
-    } finally {
-      setState(() => _isUploading = false);
     }
   }
 
@@ -152,6 +106,9 @@ class _UploadNotePageState extends State<UploadNotePage> {
 
   @override
   Widget build(BuildContext context) {
+    final uploadProvider = context.watch<UploadProvider>();
+    final isUploading = uploadProvider.isUploading;
+    final progress = uploadProvider.progress;
     final fileName = _pickedFile?.name ?? "No file selected";
 
     return Scaffold(
@@ -195,18 +152,18 @@ class _UploadNotePageState extends State<UploadNotePage> {
             ),
 
             const SizedBox(height: 12),
-            if (_isUploading)
+            if (isUploading)
               Column(
                 children: [
-                  LinearProgressIndicator(value: _progress),
+                  LinearProgressIndicator(value: progress),
                   const SizedBox(height: 8),
-                  Text("${(_progress * 100).toStringAsFixed(0)}%"),
+                  Text("${(progress * 100).toStringAsFixed(0)}%"),
                 ],
               ),
 
             const Spacer(),
             ElevatedButton.icon(
-              onPressed: _isUploading ? null : _startUpload,
+              onPressed: isUploading ? null : _startUpload,
               icon: const Icon(Icons.cloud_upload),
               label: const Text("Upload"),
             ),

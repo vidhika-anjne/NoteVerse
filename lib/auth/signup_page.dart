@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:notes_sharing/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:notes_sharing/providers/auth_provider.dart';
 import 'login_page.dart';
 import 'package:notes_sharing/pages/main_screen.dart';
 import 'package:notes_sharing/pages/profile_setup_page.dart';
@@ -12,15 +13,14 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateMixin {
-  final AuthService _authService = AuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
 
-  bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
@@ -61,47 +61,6 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  // Future<void> _handleSignup() async {
-  //   if (_fullNameController.text.isEmpty ||
-  //       _emailController.text.isEmpty ||
-  //       _passwordController.text.isEmpty ||
-  //       _confirmPasswordController.text.isEmpty) {
-  //     _showErrorSnackBar('Please fill in all fields');
-  //     return;
-  //   }
-  //
-  //   if (_passwordController.text != _confirmPasswordController.text) {
-  //     _showErrorSnackBar('Passwords do not match');
-  //     return;
-  //   }
-  //
-  //   if (_passwordController.text.length < 6) {
-  //     _showErrorSnackBar('Password must be at least 6 characters long');
-  //     return;
-  //   }
-  //
-  //   setState(() => _isLoading = true);
-  //
-  //   final user = await _authService.signUp(
-  //     _emailController.text.trim(),
-  //     _passwordController.text.trim(),
-  //   );
-  //
-  //   setState(() => _isLoading = false);
-  //
-  //   if (user != null && mounted) {
-  //     _showSuccessSnackBar('Account created successfully!');
-  //     await Future.delayed(const Duration(milliseconds: 1500));
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(builder: (_) => const ProfileSetupPage(userId:  user.user!.uid),
-  //       ),
-  //     );
-  //   } else {
-  //     _showErrorSnackBar('Signup failed. Please try again.');
-  //   }
-  // }
-
   Future<void> _handleSignup() async {
     if (_fullNameController.text.isEmpty ||
         _emailController.text.isEmpty ||
@@ -121,14 +80,12 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
       return;
     }
 
-    setState(() => _isLoading = true);
+    final auth = context.read<AuthProvider>();
 
-    final user = await _authService.signUp(
+    final user = await auth.signUp(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
-
-    setState(() => _isLoading = false);
 
     if (user != null && mounted) {
       _showSuccessSnackBar('Account created successfully!');
@@ -142,7 +99,8 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         ),
       );
     } else {
-      _showErrorSnackBar('Signup failed. Please try again.');
+      final message = auth.error ?? 'Signup failed. Please try again.';
+      _showErrorSnackBar(message);
     }
   }
 
@@ -229,7 +187,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             ),
 
             // Loading Overlay
-            if (_isLoading) _buildLoadingOverlay(),
+            if (context.watch<AuthProvider>().isLoading) _buildLoadingOverlay(),
           ],
         ),
       ),
@@ -627,6 +585,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   }
 
   Widget _buildSignupButton() {
+    final isLoading = context.watch<AuthProvider>().isLoading;
     return Container(
       width: double.infinity,
       height: 56,
@@ -646,7 +605,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         ],
       ),
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleSignup,
+        onPressed: isLoading ? null : _handleSignup,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -654,30 +613,30 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: _isLoading
+        child: isLoading
             ? const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation(Colors.white),
-          ),
-        )
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+              )
             : const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Create Account',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Create Account',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                ],
               ),
-            ),
-            SizedBox(width: 8),
-            Icon(Icons.arrow_forward, size: 20, color: Colors.white),
-          ],
-        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:notes_sharing/pages/main_screen.dart';
-import 'package:notes_sharing/services/auth_service.dart';
+import 'package:notes_sharing/providers/auth_provider.dart';
 import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -11,12 +12,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-  final AuthService _authService = AuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _isLoading = false;
   bool _obscurePassword = true;
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
@@ -49,7 +49,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
-    _animationController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -61,14 +60,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       return;
     }
 
-    setState(() => _isLoading = true);
+    final auth = context.read<AuthProvider>();
 
-    final user = await _authService.signIn(
+    final user = await auth.signIn(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
-
-    setState(() => _isLoading = false);
 
     if (user != null && mounted) {
       Navigator.pushReplacement(
@@ -76,7 +73,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else {
-      _showErrorSnackBar('Login failed. Please check your credentials.');
+      final message = auth.error ?? 'Login failed. Please check your credentials.';
+      _showErrorSnackBar(message);
     }
   }
 
@@ -146,7 +144,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             ),
 
             // Loading Overlay
-            if (_isLoading) _buildLoadingOverlay(),
+            if (context.watch<AuthProvider>().isLoading) _buildLoadingOverlay(),
           ],
         ),
       ),
@@ -448,6 +446,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildLoginButton() {
+    final isLoading = context.watch<AuthProvider>().isLoading;
     return Container(
       width: double.infinity,
       height: 56,
@@ -467,7 +466,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         ],
       ),
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleLogin,
+        onPressed: isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -475,7 +474,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: _isLoading
+        child: isLoading
             ? const SizedBox(
           width: 20,
           height: 20,
