@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:notes_sharing/pages/saved_notes.dart';
 import 'branch_subject_selection_page.dart';
@@ -30,262 +29,162 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<String> _titles = const [
     "Home",
-    "Select Branch",
-    "Saved Notes",
+    "Browse Notes",
+    "Saved",
     "Profile",
   ];
 
   final List<IconData> _icons = const [
     Icons.home_rounded,
-    Icons.school_rounded,
+    Icons.search_rounded,
     Icons.bookmark_rounded,
     Icons.person_rounded,
   ];
 
-  final List<IconData> _outlinedIcons = const [
-    Icons.home_outlined,
-    Icons.school_outlined,
-    Icons.bookmark_outline_rounded,
-    Icons.person_outlined,
-  ];
+  final Color _bgColor = const Color(0xFFF5F5F0);
 
-  // New neon color palette
-  final Color _neonGreen = const Color(0xFF00FF88);
-  final Color _neonMagenta = const Color(0xFFFF0080);
-  final Color _neonCyan = const Color(0xFF00D4FF);
-  final Color _primaryDark = const Color(0xFF1A1A1A);
-  final Color _secondaryDark = const Color(0xFF2D2D2D);
-  final Color _deepDark = const Color(0xFF0F0F0F);
-  final Color _primaryText = const Color(0xFFFFFFFF);
-  final Color _secondaryText = const Color(0xFFB3B3B3);
-  final Color _subtleText = const Color(0xFF666666);
+  final Color _sidebarColor = const Color(0xFFF5F5F0);
+  final Color _accentColor = const Color(0xFF000000);
+  final Color _textColor = const Color(0xFF000000);
+  final Color _subtextColor = const Color(0xFF666666);
+  final Color _borderColor = const Color(0xFFE5E5E0);
 
   @override
   Widget build(BuildContext context) {
-    final bool isDesktop = MediaQuery.of(context).size.width >= 768;
-
-    if (isDesktop) {
-      return _buildDesktopLayout();
-    } else {
-      return _buildMobileLayout();
-    }
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    return screenWidth > 768 ? _buildWebLayout() : _buildMobileLayout();
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildWebLayout() {
     return Scaffold(
+      backgroundColor: _bgColor,
       body: Row(
         children: [
-          // Left Navigation Rail - Slim and modern
+          // Left Sidebar
           Container(
-            width: 80,
-            decoration: BoxDecoration(
-              color: _secondaryDark,
-              border: Border(
-                right: BorderSide(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
-              ),
-            ),
+            width: 240,
+            color: _sidebarColor,
             child: Column(
               children: [
-                // App Logo
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.white.withOpacity(0.1),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [_neonGreen, _neonCyan],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _neonGreen.withOpacity(0.3),
-                          blurRadius: 8,
-                          spreadRadius: 1,
+                // Logo
+                Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: _accentColor,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.menu_book_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
+                        child: const Icon(Icons.book, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'NotesApp',
+                        style: TextStyle(
+                          color: _textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                // Navigation Items
+                // Navigation
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: List.generate(_titles.length, (index) {
-                      final bool isSelected = _currentIndex == index;
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: _DesktopNavItem(
-                          icon: isSelected ? _icons[index] : _outlinedIcons[index],
-                          isSelected: isSelected,
-                          onTap: () => setState(() => _currentIndex = index),
-                          color: _getNavColor(index),
-                        ),
+                      return _SidebarItem(
+                        icon: _icons[index],
+                        title: _titles[index],
+                        isSelected: _currentIndex == index,
+                        onTap: () => setState(() => _currentIndex = index),
                       );
                     }),
-                  ),
-                ),
-
-                // Settings button
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: _DesktopNavItem(
-                    icon: Icons.settings_rounded,
-                    isSelected: false,
-                    onTap: () => setState(() => _currentIndex = 3),
-                    color: _secondaryText,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Main Content Area
+          // Main Content
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    _primaryDark,
-                    _deepDark,
-                  ],
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Desktop App Bar
-                  Container(
-                    height: 70,
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: _secondaryDark.withOpacity(0.8),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 1,
+            child: Column(
+              children: [
+                // Top Bar
+                Container(
+                  height: 70,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: BoxDecoration(
+                    color: _bgColor,
+                    border: Border(
+                      bottom: BorderSide(color: _borderColor, width: 1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        _titles[_currentIndex],
+                        style: TextStyle(
+                          color: _textColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          _titles[_currentIndex],
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: _primaryText,
-                            letterSpacing: -0.5,
-                          ),
+                      const Spacer(),
+                      // Search Bar
+                      Container(
+                        width: 300,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F0),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: _borderColor),
                         ),
-                        const Spacer(),
-                        // Search Bar with glow effect
-                        // Container(
-                        //   width: 300,
-                        //   height: 40,
-                        //   padding: const EdgeInsets.symmetric(horizontal: 16),
-                        //   decoration: BoxDecoration(
-                        //     color: _deepDark,
-                        //     borderRadius: BorderRadius.circular(20),
-                        //     border: Border.all(
-                        //       color: _neonCyan.withOpacity(0.3),
-                        //     ),
-                        //     boxShadow: [
-                        //       BoxShadow(
-                        //         color: _neonCyan.withOpacity(0.1),
-                        //         blurRadius: 10,
-                        //         spreadRadius: 1,
-                        //       ),
-                        //     ],
-                        //   ),
-                          // child: Row(
-                          //   children: [
-                          //     Icon(
-                          //       Icons.search_rounded,
-                          //       color: _neonCyan,
-                          //       size: 20,
-                          //     ),
-                          //     const SizedBox(width: 12),
-                          //     Expanded(
-                          //       child: TextField(
-                          //         style: TextStyle(
-                          //           color: _primaryText,
-                          //           fontSize: 14,
-                          //         ),
-                          //         decoration: InputDecoration(
-                          //           hintText: 'Search notes...',
-                          //           hintStyle: TextStyle(
-                          //             color: _subtleText,
-                          //           ),
-                          //           border: InputBorder.none,
-                          //           isDense: true,
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
-                        // ),
-                        const SizedBox(width: 20),
-                        // Notification Icon
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: _deepDark,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: _neonMagenta.withOpacity(0.3),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _neonMagenta.withOpacity(0.1),
-                                blurRadius: 8,
-                                spreadRadius: 1,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            Icon(Icons.search, color: _subtextColor, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                style: TextStyle(color: const Color(0xFFF5F5F0), fontSize: 14),
+                                decoration: InputDecoration(
+                                  hintText: 'Search...',
+                                  hintStyle: TextStyle(color: _subtextColor),
+                                  border: InputBorder.none,
+                                ),
                               ),
-                            ],
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.notifications_none_rounded,
-                              color: _neonMagenta,
-                              size: 20,
                             ),
-                            onPressed: () {},
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _borderColor),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.notifications_outlined, color: _textColor),
+                          onPressed: () {},
+                          iconSize: 20,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
 
-                  // Page Content
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      child: _buildCurrentPage(),
-                    ),
-                  ),
-                ],
-              ),
+                // Page Content
+                Expanded(
+                  child: _buildCurrentPage(),
+                ),
+              ],
             ),
           ),
         ],
@@ -295,70 +194,64 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildMobileLayout() {
     return Scaffold(
-      backgroundColor: _primaryDark,
+      backgroundColor: _bgColor,
       appBar: AppBar(
+        backgroundColor: _sidebarColor,
+        elevation: 0,
         title: Text(
           _titles[_currentIndex],
           style: TextStyle(
+            color: _textColor,
             fontWeight: FontWeight.w700,
-            color: _primaryText,
-            fontSize: 20,
-            letterSpacing: -0.5,
           ),
         ),
-        centerTitle: true,
-        backgroundColor: _secondaryDark,
-        elevation: 0,
-        iconTheme: IconThemeData(color: _primaryText),
-        actions: [
-          if (_currentIndex == 0)
-            IconButton(
-              icon: Icon(Icons.search_rounded, color: _neonCyan),
-              onPressed: () {},
-            ),
-        ],
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              _primaryDark,
-              _deepDark,
-            ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: _borderColor,
+            height: 1,
           ),
         ),
-        child: _buildCurrentPage(),
       ),
+      body: _buildCurrentPage(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: _secondaryDark,
+          color: _sidebarColor,
           border: Border(
-            top: BorderSide(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+            top: BorderSide(color: _borderColor, width: 1),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 20,
-              offset: const Offset(0, -2),
-            ),
-          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: SafeArea(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(_titles.length, (index) {
-              final bool isSelected = _currentIndex == index;
-              return _MobileNavItem(
-                icon: isSelected ? _icons[index] : _outlinedIcons[index],
-                isSelected: isSelected,
-                onTap: () => setState(() => _currentIndex = index),
-                color: _getNavColor(index),
+              return Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _currentIndex = index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _icons[index],
+                          color: _currentIndex == index ? _accentColor : _subtextColor,
+                          size: 24,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _titles[index],
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: _currentIndex == index 
+                                ? FontWeight.w600 
+                                : FontWeight.w400,
+                            color: _currentIndex == index ? _accentColor : _subtextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               );
             }),
           ),
@@ -399,117 +292,53 @@ class _MainScreenState extends State<MainScreen> {
 
     return _pages[_currentIndex];
   }
-
-  Color _getNavColor(int index) {
-    switch (index) {
-      case 0:
-        return _neonGreen;
-      case 1:
-        return _neonCyan;
-      case 2:
-        return _neonMagenta;
-      case 3:
-        return _neonGreen;
-      default:
-        return _neonCyan;
-    }
-  }
 }
 
-class _DesktopNavItem extends StatelessWidget {
+class _SidebarItem extends StatelessWidget {
   final IconData icon;
+  final String title;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color color;
 
-  const _DesktopNavItem({
+  const _SidebarItem({
     required this.icon,
+    required this.title,
     required this.isSelected,
     required this.onTap,
-    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        width: 56,
-        height: 56,
-        margin: const EdgeInsets.symmetric(horizontal: 12),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          border: isSelected
-              ? Border.all(
-                  color: color.withOpacity(0.4),
-                  width: 2,
-                )
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  ),
-                ]
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected 
+              ? Border.all(color: const Color(0xFFE5E5E0)) 
               : null,
         ),
-        child: Icon(
-          icon,
-          color: isSelected ? color : Colors.white.withOpacity(0.6),
-          size: 24,
-        ),
-      ),
-    );
-  }
-}
-
-class _MobileNavItem extends StatelessWidget {
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Color color;
-
-  const _MobileNavItem({
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: isSelected ? 52 : 44,
-        height: isSelected ? 52 : 44,
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(isSelected ? 16 : 12),
-          border: isSelected
-              ? Border.all(
-                  color: color.withOpacity(0.4),
-                  width: 2,
-                )
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
-        ),
-        child: Icon(
-          icon,
-          color: isSelected ? color : Colors.white.withOpacity(0.6),
-          size: isSelected ? 24 : 22,
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF000000) : const Color(0xFF666666),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? const Color(0xFF000000) : const Color(0xFF666666),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );

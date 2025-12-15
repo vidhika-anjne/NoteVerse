@@ -15,7 +15,7 @@ class BranchSubjectSelectionPage extends StatefulWidget {
 }
 
 class _BranchSubjectSelectionPageState
-    extends State<BranchSubjectSelectionPage> {
+    extends State<BranchSubjectSelectionPage> with TickerProviderStateMixin {
   String? selectedYear;
   String? selectedSemester;
   String? selectedBranchId;
@@ -26,10 +26,40 @@ class _BranchSubjectSelectionPageState
   Map<String, dynamic> branches = {};
   Map<String, dynamic> subjects = {};
 
+  late AnimationController _semesterController;
+  late AnimationController _branchController;
+  late AnimationController _subjectController;
+  late AnimationController _buttonController;
+
   @override
   void initState() {
     super.initState();
+    _semesterController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _branchController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _subjectController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _buttonController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
     _loadBranches();
+  }
+
+  @override
+  void dispose() {
+    _semesterController.dispose();
+    _branchController.dispose();
+    _subjectController.dispose();
+    _buttonController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadBranches() async {
@@ -48,6 +78,7 @@ class _BranchSubjectSelectionPageState
     setState(() {
       subjects = loadedSubjects;
     });
+    _subjectController.forward(from: 0);
   }
 
   void _updateSemestersForYear(String year) {
@@ -78,6 +109,9 @@ class _BranchSubjectSelectionPageState
       semesterOptions = [];
       subjects = {};
     });
+    _semesterController.reverse();
+    _branchController.reverse();
+    _subjectController.reverse();
   }
 
   @override
@@ -96,129 +130,258 @@ class _BranchSubjectSelectionPageState
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        title: const Text(
-          'Select Your Course',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: const Color(0xFF1A2332),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (selectedYear != null)
-            IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.white70),
-              onPressed: _resetSelections,
-              tooltip: 'Reset Selection',
-            ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(isMobile ? 16 : 24),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 16 : 120,
+          vertical: isMobile ? 16 : 40,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Progress Indicator
-            _buildProgressIndicator(),
-            SizedBox(height: isMobile ? 24 : 32),
+            // Header
+            Row(
+              children: [
+                Text(
+                  'Browse Notes',
+                  style: TextStyle(
+                    fontSize: isMobile ? 28 : 36,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF000000),
+                  ),
+                ),
+                const Spacer(),
+                if (selectedYear != null)
+                  TextButton.icon(
+                    onPressed: _resetSelections,
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('Reset'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF666666),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Select your course details to find notes',
+              style: TextStyle(
+                fontSize: isMobile ? 14 : 16,
+                color: const Color(0xFF666666),
+              ),
+            ),
+            SizedBox(height: isMobile ? 32 : 48),
+
+            // Progress Stepper
+            _buildProgressStepper(isMobile),
+            SizedBox(height: isMobile ? 32 : 48),
 
             // Year Selection
             _buildSectionHeader(
               title: 'Select Year',
               subtitle: 'Choose your academic year',
-              icon: Icons.school,
+              icon: Icons.school_outlined,
               isMobile: isMobile,
+              step: '1',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             _buildYearGrid(isMobile),
-            SizedBox(height: isMobile ? 24 : 32),
+            SizedBox(height: isMobile ? 32 : 48),
 
             // Semester Selection
             if (selectedYear != null) ...[
-              _buildSectionHeader(
-                title: 'Select Semester',
-                subtitle: 'Choose your current semester',
-                icon: Icons.date_range,
-                isMobile: isMobile,
+              SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.1),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: _semesterController,
+                  curve: Curves.easeOut,
+                )),
+                child: FadeTransition(
+                  opacity: _semesterController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(
+                        title: 'Select Semester',
+                        subtitle: 'Choose your current semester',
+                        icon: Icons.date_range_outlined,
+                        isMobile: isMobile,
+                        step: '2',
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSemesterGrid(isMobile, isTablet),
+                      SizedBox(height: isMobile ? 32 : 48),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildSemesterGrid(isMobile, isTablet),
-              SizedBox(height: isMobile ? 24 : 32),
             ],
 
             // Branch Selection
             if (selectedSemester != null) ...[
-              _buildSectionHeader(
-                title: 'Select Branch',
-                subtitle: 'Choose your department',
-                icon: Icons.architecture,
-                isMobile: isMobile,
+              SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.1),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: _branchController,
+                  curve: Curves.easeOut,
+                )),
+                child: FadeTransition(
+                  opacity: _branchController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(
+                        title: 'Select Branch',
+                        subtitle: 'Choose your department',
+                        icon: Icons.account_tree_outlined,
+                        isMobile: isMobile,
+                        step: '3',
+                      ),
+                      const SizedBox(height: 20),
+                      _buildBranchGrid(isMobile, isTablet),
+                      SizedBox(height: isMobile ? 32 : 48),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildBranchGrid(isMobile, isTablet),
-              SizedBox(height: isMobile ? 24 : 32),
             ],
 
             // Subject Selection
             if (selectedBranchId != null && subjects.isNotEmpty) ...[
-              _buildSectionHeader(
-                title: 'Select Subject',
-                subtitle: 'Choose your subject',
-                icon: Icons.menu_book,
-                isMobile: isMobile,
+              SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.1),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: _subjectController,
+                  curve: Curves.easeOut,
+                )),
+                child: FadeTransition(
+                  opacity: _subjectController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(
+                        title: 'Select Subject',
+                        subtitle: 'Choose your subject to view notes',
+                        icon: Icons.menu_book_outlined,
+                        isMobile: isMobile,
+                        step: '4',
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSubjectGrid(filteredSubjects, isMobile, isTablet),
+                      SizedBox(height: isMobile ? 32 : 48),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildSubjectGrid(filteredSubjects, isMobile, isTablet),
-              SizedBox(height: isMobile ? 24 : 32),
             ],
 
             // Continue Button
             if (selectedBranchId != null && selectedSubjectId != null) ...[
               _buildContinueButton(isMobile),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
             ],
-
-            // Add some extra space at the bottom
-            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProgressIndicator() {
-    final totalSteps = 4;
+  Widget _buildProgressStepper(bool isMobile) {
     var completedSteps = 0;
     if (selectedYear != null) completedSteps++;
     if (selectedSemester != null) completedSteps++;
     if (selectedBranchId != null) completedSteps++;
     if (selectedSubjectId != null) completedSteps++;
 
-    return Column(
-      children: [
-        LinearProgressIndicator(
-          value: completedSteps / totalSteps,
-          backgroundColor: const Color(0xFF334155),
-          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-          borderRadius: BorderRadius.circular(8),
-          minHeight: 6,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Step $completedSteps of $totalSteps',
-          style: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 11,
-          ),
-        ),
-      ],
+    final steps = [
+      {'title': 'Year', 'completed': selectedYear != null},
+      {'title': 'Semester', 'completed': selectedSemester != null},
+      {'title': 'Branch', 'completed': selectedBranchId != null},
+      {'title': 'Subject', 'completed': selectedSubjectId != null},
+    ];
+
+    return Row(
+      children: List.generate(steps.length * 2 - 1, (index) {
+        if (index.isOdd) {
+          // Line connector
+          final stepIndex = index ~/ 2;
+          final isCompleted = stepIndex < completedSteps;
+          return Expanded(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 2,
+              color: isCompleted 
+                  ? const Color(0xFF000000) 
+                  : const Color(0xFFE5E5E0),
+            ),
+          );
+        } else {
+          // Step circle
+          final stepIndex = index ~/ 2;
+          final step = steps[stepIndex];
+          final isCompleted = step['completed'] as bool;
+          final isActive = stepIndex == completedSteps;
+
+          return Column(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: isMobile ? 36 : 44,
+                height: isMobile ? 36 : 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted 
+                      ? const Color(0xFF000000) 
+                      : (isActive ? Colors.white : const Color(0xFFF5F5F0)),
+                  border: Border.all(
+                    color: isCompleted || isActive
+                        ? const Color(0xFF000000)
+                        : const Color(0xFFE5E5E0),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: isCompleted
+                      ? const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 18,
+                        )
+                      : Text(
+                          '${stepIndex + 1}',
+                          style: TextStyle(
+                            color: isActive 
+                                ? const Color(0xFF000000)
+                                : const Color(0xFF999999),
+                            fontWeight: FontWeight.w600,
+                            fontSize: isMobile ? 14 : 16,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                step['title'] as String,
+                style: TextStyle(
+                  fontSize: isMobile ? 11 : 12,
+                  fontWeight: isCompleted || isActive 
+                      ? FontWeight.w600 
+                      : FontWeight.w400,
+                  color: isCompleted || isActive
+                      ? const Color(0xFF000000)
+                      : const Color(0xFF999999),
+                ),
+              ),
+            ],
+          );
+        }
+      }),
     );
   }
 
@@ -227,37 +390,36 @@ class _BranchSubjectSelectionPageState
     required String subtitle,
     required IconData icon,
     required bool isMobile,
+    required String step,
   }) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFF10B981).withOpacity(0.3),
-            ),
+            color: const Color(0xFFF5F5F0),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF10B981), size: isMobile ? 16 : 18),
+          child: Icon(icon, color: const Color(0xFF000000), size: isMobile ? 20 : 24),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 16 : 18,
-                fontWeight: FontWeight.w600,
+                color: const Color(0xFF000000),
+                fontSize: isMobile ? 18 : 22,
+                fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: 2),
             Text(
               subtitle,
               style: TextStyle(
-                color: const Color(0xFF94A3B8),
-                fontSize: isMobile ? 11 : 12,
+                color: const Color(0xFF666666),
+                fontSize: isMobile ? 13 : 14,
               ),
             ),
           ],
@@ -267,96 +429,73 @@ class _BranchSubjectSelectionPageState
   }
 
   Widget _buildYearGrid(bool isMobile) {
-    final double height = isMobile ? 60 : 70;
-    final double spacing = isMobile ? 8 : 10;
-    final double aspectRatio = isMobile ? 0.8 : 0.7;
-
-    return SizedBox(
-      height: height,
-      child: GridView.builder(
-        scrollDirection: Axis.horizontal,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1,
-          mainAxisSpacing: spacing,
-          childAspectRatio: aspectRatio,
-        ),
-        itemCount: yearOptions.length,
-        itemBuilder: (context, index) {
-          final year = yearOptions[index];
-          final isSelected = selectedYear == year;
-          return _buildSelectionCard(
-            title: 'Year $year',
-            isSelected: isSelected,
-            isMobile: isMobile,
-            onTap: () {
-              setState(() {
-                selectedYear = year;
-                selectedSemester = null;
-                selectedBranchId = null;
-                selectedSubjectId = null;
-                _updateSemestersForYear(year);
-              });
-            },
-          );
-        },
-      ),
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: yearOptions.map((year) {
+        final isSelected = selectedYear == year;
+        return _AnimatedSelectionCard(
+          title: 'Year $year',
+          isSelected: isSelected,
+          isMobile: isMobile,
+          width: isMobile ? 150 : 180,
+          onTap: () {
+            setState(() {
+              selectedYear = year;
+              selectedSemester = null;
+              selectedBranchId = null;
+              selectedSubjectId = null;
+              _updateSemestersForYear(year);
+            });
+            _semesterController.forward(from: 0);
+          },
+        );
+      }).toList(),
     );
   }
 
   Widget _buildSemesterGrid(bool isMobile, bool isTablet) {
-    final crossAxisCount = _getCrossAxisCount(isMobile, isTablet);
-    final double spacing = isMobile ? 8 : 10;
-    final double aspectRatio = isMobile ? 2.2 : (isTablet ? 2.5 : 3);
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: spacing,
-        mainAxisSpacing: spacing,
-        childAspectRatio: aspectRatio,
-      ),
-      itemCount: semesterOptions.length,
-      itemBuilder: (context, index) {
-        final semester = semesterOptions[index];
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: semesterOptions.map((semester) {
         final isSelected = selectedSemester == semester;
-        return _buildSelectionCard(
+        return _AnimatedSelectionCard(
           title: 'Semester $semester',
           subtitle: 'Year $selectedYear',
           isSelected: isSelected,
           isMobile: isMobile,
+          width: isMobile ? 150 : 180,
           onTap: () {
             setState(() {
               selectedSemester = semester;
               selectedBranchId = null;
               selectedSubjectId = null;
             });
+            _branchController.forward(from: 0);
           },
         );
-      },
+      }).toList(),
     );
   }
 
   Widget _buildBranchGrid(bool isMobile, bool isTablet) {
     final crossAxisCount = _getCrossAxisCount(isMobile, isTablet);
-    final double spacing = isMobile ? 8 : 10;
-    final double aspectRatio = isMobile ? 1.2 : (isTablet ? 1.5 : 1.8);
-
+    
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: spacing,
-        mainAxisSpacing: spacing,
-        childAspectRatio: aspectRatio,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 2.5,
       ),
       itemCount: branches.entries.length,
       itemBuilder: (context, index) {
         final branch = branches.entries.elementAt(index);
         final isSelected = selectedBranchId == branch.key;
-        return _buildSelectionCard(
+        return _AnimatedSelectionCard(
           title: branch.value['name'] ?? branch.key,
           subtitle: 'Department',
           isSelected: isSelected,
@@ -381,35 +520,35 @@ class _BranchSubjectSelectionPageState
   ) {
     if (filteredSubjects.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A2332),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF334155)),
+          color: const Color(0xFFF5F5F0),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E5E0)),
         ),
         child: Column(
           children: [
             Icon(
-              Icons.search_off,
-              size: isMobile ? 32 : 40,
-              color: Colors.grey.shade600,
+              Icons.search_off_outlined,
+              size: isMobile ? 48 : 64,
+              color: const Color(0xFF999999),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               'No subjects found',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 14 : 16,
-                fontWeight: FontWeight.w500,
+                color: const Color(0xFF000000),
+                fontSize: isMobile ? 16 : 18,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               'No subjects available for Year $selectedYear, Semester $selectedSemester',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: const Color(0xFF94A3B8),
-                fontSize: isMobile ? 10 : 12,
+                color: const Color(0xFF666666),
+                fontSize: isMobile ? 13 : 14,
               ),
             ),
           ],
@@ -418,17 +557,15 @@ class _BranchSubjectSelectionPageState
     }
 
     final crossAxisCount = _getCrossAxisCount(isMobile, isTablet);
-    final double spacing = isMobile ? 8 : 10;
-    final double aspectRatio = isMobile ? 1.5 : (isTablet ? 1.8 : 2);
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: spacing,
-        mainAxisSpacing: spacing,
-        childAspectRatio: aspectRatio,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 2.5,
       ),
       itemCount: filteredSubjects.length,
       itemBuilder: (context, index) {
@@ -436,7 +573,7 @@ class _BranchSubjectSelectionPageState
         final isSelected = selectedSubjectId == subject.key;
         final subjectData = Map<String, dynamic>.from(subject.value);
 
-        return _buildSelectionCard(
+        return _AnimatedSelectionCard(
           title: subjectData['name'] ?? subject.key,
           subtitle: 'Subject',
           isSelected: isSelected,
@@ -452,143 +589,207 @@ class _BranchSubjectSelectionPageState
   }
 
   int _getCrossAxisCount(bool isMobile, bool isTablet) {
-    if (isMobile) return 2;
-    if (isTablet) return 3;
-    return 4;
-  }
-
-  Widget _buildSelectionCard({
-    required String title,
-    String? subtitle,
-    required bool isSelected,
-    required bool isMobile,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 1,
-      color: isSelected ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFF1A2332),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(
-          color: isSelected ? const Color(0xFF10B981) : const Color(0xFF334155),
-          width: isSelected ? 1.5 : 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: EdgeInsets.all(isMobile ? 10 : 12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: isSelected ? const Color(0xFF10B981) : Colors.white,
-                  fontSize: isMobile ? 12 : 13,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: const Color(0xFF94A3B8),
-                    fontSize: isMobile ? 9 : 10,
-                  ),
-                ),
-              ],
-              if (isSelected) ...[
-                const Spacer(),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 10,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
+    if (isMobile) return 1;
+    if (isTablet) return 2;
+    return 3;
   }
 
   Widget _buildContinueButton(bool isMobile) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF10B981), Color(0xFF059669)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(isMobile ? 10 : 12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: () {
-          if (widget.onViewNotes != null) {
-            widget.onViewNotes!(
-              'btech',
-              selectedBranchId!,
-              selectedSubjectId!,
-            );
-          } else {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => NotesListPage(
-                  degreeId: 'btech',
-                  branchId: selectedBranchId!,
-                  subjectId: selectedSubjectId!,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: AnimatedBuilder(
+        animation: _buttonController,
+        builder: (context, child) {
+          return Container(
+            width: double.infinity,
+            height: isMobile ? 54 : 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF000000),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF000000).withOpacity(
+                    0.1 + (_buttonController.value * 0.15),
+                  ),
+                  blurRadius: 20 + (_buttonController.value * 10),
+                  offset: Offset(0, 4 + (_buttonController.value * 4)),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  if (widget.onViewNotes != null) {
+                    widget.onViewNotes!(
+                      'btech',
+                      selectedBranchId!,
+                      selectedSubjectId!,
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NotesListPage(
+                          degreeId: 'btech',
+                          branchId: selectedBranchId!,
+                          subjectId: selectedSubjectId!,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'View Notes',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isMobile ? 15 : 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      SizedBox(width: 8 + (_buttonController.value * 4)),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: isMobile ? 18 : 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            );
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.symmetric(vertical: isMobile ? 14 : 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isMobile ? 10 : 12),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.arrow_forward, color: Colors.white, size: isMobile ? 18 : 20),
-            SizedBox(width: isMobile ? 6 : 8),
-            Text(
-              'View Notes',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 14 : 16,
-                fontWeight: FontWeight.w600,
-              ),
             ),
-          ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AnimatedSelectionCard extends StatefulWidget {
+  final String title;
+  final String? subtitle;
+  final bool isSelected;
+  final bool isMobile;
+  final VoidCallback onTap;
+  final double? width;
+
+  const _AnimatedSelectionCard({
+    required this.title,
+    this.subtitle,
+    required this.isSelected,
+    required this.isMobile,
+    required this.onTap,
+    this.width,
+  });
+
+  @override
+  State<_AnimatedSelectionCard> createState() => _AnimatedSelectionCardState();
+}
+
+class _AnimatedSelectionCardState extends State<_AnimatedSelectionCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedScale(
+        scale: widget.isSelected ? 1.0 : (_isHovered ? 1.02 : 1.0),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: widget.width,
+          decoration: BoxDecoration(
+            color: widget.isSelected ? const Color(0xFF000000) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.isSelected 
+                  ? const Color(0xFF000000)
+                  : (_isHovered ? const Color(0xFF000000) : const Color(0xFFE5E5E0)),
+              width: widget.isSelected ? 2 : 1.5,
+            ),
+            boxShadow: [
+              if (_isHovered || widget.isSelected)
+                BoxShadow(
+                  color: const Color(0xFF000000).withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: EdgeInsets.all(widget.isMobile ? 16 : 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: TextStyle(
+                              color: widget.isSelected 
+                                  ? Colors.white 
+                                  : const Color(0xFF000000),
+                              fontSize: widget.isMobile ? 14 : 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (widget.subtitle != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.subtitle!,
+                              style: TextStyle(
+                                color: widget.isSelected 
+                                    ? Colors.white70 
+                                    : const Color(0xFF666666),
+                                fontSize: widget.isMobile ? 11 : 12,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (widget.isSelected)
+                      AnimatedScale(
+                        scale: 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.elasticOut,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Color(0xFF000000),
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+           ),
+          ),
         ),
       ),
     );

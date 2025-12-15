@@ -109,12 +109,12 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.red.shade300),
+            Icon(Icons.error_outline, color: Colors.red.shade400),
             const SizedBox(width: 8),
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: Colors.red.shade900.withOpacity(0.8),
+        backgroundColor: const Color(0xFF000000),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -131,7 +131,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: Colors.green.shade900.withOpacity(0.8),
+        backgroundColor: const Color(0xFF000000),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -146,17 +146,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0A0E17),
-              Color(0xFF0F1729),
-              Color(0xFF1A2332),
-            ],
-          ),
-        ),
+        color: const Color(0xFFF5F5F0),
         child: Stack(
           children: [
             // Animated Background Elements
@@ -212,7 +202,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF10B981).withOpacity(0.1),
+                  const Color(0xFFE8E8E3).withOpacity(0.6),
                   Colors.transparent,
                 ],
               ),
@@ -233,7 +223,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFF8B5CF6).withOpacity(0.05),
+                  const Color(0xFFD4D4CC).withOpacity(0.4),
                   Colors.transparent,
                 ],
               ),
@@ -260,7 +250,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                 style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color(0xFF1A1A1A),
                   height: 1.2,
                 ),
                 textAlign: TextAlign.center,
@@ -270,7 +260,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                 'Start your learning journey with thousands of students\nand access unlimited notes and resources',
                 style: TextStyle(
                   fontSize: 18,
-                  color: Color(0xFF94A3B8),
+                  color: Color(0xFF5A5A5A),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -302,7 +292,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           style: TextStyle(
             fontSize: isTablet ? 36 : 32,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: const Color(0xFF1A1A1A),
           ),
         ),
         const SizedBox(height: 8),
@@ -310,7 +300,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           'Join thousands of students today',
           style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF94A3B8),
+            color: Color(0xFF5A5A5A),
           ),
         ),
         const SizedBox(height: 40),
@@ -326,23 +316,19 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF10B981), Color(0xFF059669)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF10B981).withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
           child: const Icon(
             Icons.menu_book_rounded,
-            color: Colors.white,
+            color: Color(0xFFFAFAF8),
             size: 40,
           ),
         ),
@@ -352,7 +338,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Color(0xFF1A1A1A),
           ),
         ),
       ],
@@ -377,9 +363,9 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2332).withOpacity(0.6),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF334155)),
+        border: Border.all(color: const Color(0xFFE0E0D8)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -389,7 +375,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           Text(
             text,
             style: const TextStyle(
-              color: Color(0xFFCBD5E1),
+              color: Color(0xFF1A1A1A),
               fontSize: 14,
             ),
           ),
@@ -402,13 +388,13 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2332).withOpacity(0.8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF334155)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE0E0D8), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 18,
             offset: const Offset(0, 10),
           ),
         ],
@@ -483,25 +469,25 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Color(0xFF000000)),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-        prefixIcon: Icon(prefixIcon, color: const Color(0xFF64748B)),
+        labelStyle: const TextStyle(color: Color(0xFF666666)),
+        prefixIcon: Icon(prefixIcon, color: const Color(0xFF999999)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF334155)),
+          borderSide: const BorderSide(color: Color(0xFFE0E0D8)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF334155)),
+          borderSide: const BorderSide(color: Color(0xFFE0E0D8)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF10B981)),
+          borderSide: const BorderSide(color: Color(0xFF000000)),
         ),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: const Color(0xFFF9F9F9),
       ),
     );
   }
@@ -515,32 +501,32 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Color(0xFF000000)),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF64748B)),
+        labelStyle: const TextStyle(color: Color(0xFF666666)),
+        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF999999)),
         suffixIcon: IconButton(
           icon: Icon(
             obscureText ? Icons.visibility_off : Icons.visibility,
-            color: const Color(0xFF64748B),
+            color: const Color(0xFF999999),
           ),
           onPressed: onToggleVisibility,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF334155)),
+          borderSide: const BorderSide(color: Color(0xFFE0E0D8)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF334155)),
+          borderSide: const BorderSide(color: Color(0xFFE0E0D8)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF10B981)),
+          borderSide: const BorderSide(color: Color(0xFF000000)),
         ),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: const Color(0xFFF9F9F9),
       ),
     );
   }
@@ -552,7 +538,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         Text(
           'Password must contain:',
           style: TextStyle(
-            color: Colors.grey.shade400,
+            color: const Color(0xFF666666),
             fontSize: 12,
           ),
         ),
@@ -586,31 +572,17 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
 
   Widget _buildSignupButton() {
     final isLoading = context.watch<AuthProvider>().isLoading;
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF10B981), Color(0xFF059669)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+      height: 52,
       child: ElevatedButton(
         onPressed: isLoading ? null : _handleSignup,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: const Color(0xFF000000),
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
         child: isLoading
@@ -628,13 +600,12 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
                   Text(
                     'Create Account',
                     style: TextStyle(
-                      color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   SizedBox(width: 8),
-                  Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                  Icon(Icons.arrow_forward, size: 20),
                 ],
               ),
       ),
@@ -645,17 +616,17 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return Row(
       children: [
         Expanded(
-          child: Container(height: 1, color: const Color(0xFF334155)),
+          child: Container(height: 1, color: const Color(0xFFE0E0D8)),
         ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Already have an account?',
-            style: TextStyle(color: Color(0xFF64748B)),
+            style: TextStyle(color: Color(0xFF666666)),
           ),
         ),
         Expanded(
-          child: Container(height: 1, color: const Color(0xFF334155)),
+          child: Container(height: 1, color: const Color(0xFFE0E0D8)),
         ),
       ],
     );
@@ -667,7 +638,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
       children: [
         const Text(
           "Already have an account?",
-          style: TextStyle(color: Color(0xFF94A3B8)),
+          style: TextStyle(color: Color(0xFF5A5A5A)),
         ),
         const SizedBox(width: 8),
         GestureDetector(
@@ -691,7 +662,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           child: const Text(
             'Sign In',
             style: TextStyle(
-              color: Color(0xFF059669),
+              color: Color(0xFF000000),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -702,10 +673,10 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
 
   Widget _buildLoadingOverlay() {
     return Container(
-      color: Colors.black.withOpacity(0.5),
+      color: Colors.black.withOpacity(0.3),
       child: const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
+          valueColor: AlwaysStoppedAnimation(Color(0xFF000000)),
         ),
       ),
     );

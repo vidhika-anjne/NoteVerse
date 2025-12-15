@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:lottie/lottie.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/user_profile_provider.dart';
@@ -29,83 +28,93 @@ class _SavedNotesPageState extends State<SavedNotesPage> {
     final profileProvider = context.watch<UserProfileProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Color palette
-    final Color _backgroundColor = const Color(0xFF0F0F1A);
-    final Color _cardBackground = const Color(0xFF1A1A2E);
-    final Color _accentColor = const Color(0xFF6C63FF);
-    final Color _accentColor2 = const Color(0xFF4A44B5);
-    final Color _textColor = Colors.white;
-    final Color _subtextColor = Colors.white70;
+    // Responsive values
+    final bool isMobile = screenWidth < 768;
+    final bool isTablet = screenWidth >= 768 && screenWidth < 1024;
+    final bool isDesktop = screenWidth >= 1024;
+
+    // Dynamic padding based on screen size
+    final double horizontalPadding = isMobile ? 16 : isTablet ? 32 : 120;
+    final double verticalPadding = isMobile ? 24 : 40;
+    
+    // Grid columns based on screen size
+    final int crossAxisCount = isMobile ? 2 : isTablet ? 3 : 4;
+    
+    // Card aspect ratio based on screen size
+    final double cardAspectRatio = isMobile ? 0.8 : isTablet ? 0.75 : 0.7;
+
+    // Color palette matching profile page
+    final Color _backgroundColor = Colors.white;
+    final Color _cardBackground = Colors.white;
+    final Color _accentColor = const Color(0xFF000000);
+    final Color _textColor = const Color(0xFF000000);
+    final Color _subtextColor = const Color(0xFF666666);
+    final Color _borderColor = const Color(0xFFE5E5E0);
 
     if (auth.firebaseUser == null) {
-      return Scaffold(
-        backgroundColor: _backgroundColor,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: _cardBackground,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _accentColor.withOpacity(0.3),
-                    width: 2,
+      return Container(
+        color: _backgroundColor,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: _cardBackground,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _borderColor,
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.person_outline,
+                    color: _accentColor,
+                    size: 32,
                   ),
                 ),
-                child: const Icon(
-                  Icons.person_outline_rounded,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Sign In Required',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _textColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'Please sign in to view your saved notes',
-                  textAlign: TextAlign.center,
+                const SizedBox(height: 20),
+                Text(
+                  'Sign In Required',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: _subtextColor,
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w600,
+                    color: _textColor,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  'Please sign in to view saved notes',
+                  style: TextStyle(
+                    color: _subtextColor,
+                    fontSize: isMobile ? 13 : 14,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
     if (profileProvider.isLoading) {
-      return Scaffold(
-        backgroundColor: _backgroundColor,
-        body: Center(
+      return Container(
+        color: _backgroundColor,
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Lottie.asset(
-                'assets/animations/Loading Dots Blue.json',
-                width: 80,
-                height: 80,
-              ),
+              CircularProgressIndicator(color: _accentColor),
               const SizedBox(height: 16),
               Text(
-                'Loading your notes...',
+                'Loading...',
                 style: TextStyle(
-                  color: _accentColor,
-                  fontSize: 16,
+                  color: _subtextColor,
+                  fontSize: isMobile ? 13 : 14,
                 ),
               ),
             ],
@@ -117,219 +126,161 @@ class _SavedNotesPageState extends State<SavedNotesPage> {
     final savedNotes = profileProvider.savedNotes;
 
     if (savedNotes.isEmpty) {
-      return Scaffold(
-        backgroundColor: _backgroundColor,
-        appBar: AppBar(
-          backgroundColor: _cardBackground,
-          elevation: 0,
-          title: const Text('Saved Notes'),
-          centerTitle: true,
-          foregroundColor: _textColor,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: () {
-                profileProvider.loadCurrentUserProfile();
-              },
-            ),
-          ],
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: _cardBackground,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _accentColor.withOpacity(0.3),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _accentColor.withOpacity(0.1),
-                      blurRadius: 15,
-                      spreadRadius: 3,
+      return Container(
+        color: _backgroundColor,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: isMobile ? 80 : 100,
+                  height: isMobile ? 80 : 100,
+                  decoration: BoxDecoration(
+                    color: _cardBackground,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _borderColor,
+                      width: 2,
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.bookmark_outline_rounded,
-                  color: Colors.white,
-                  size: 50,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'No Saved Notes',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _textColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'Save notes by clicking the bookmark icon',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _subtextColor,
+                  ),
+                  child: Icon(
+                    Icons.bookmark_border,
+                    color: _accentColor,
+                    size: isMobile ? 32 : 40,
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: isMobile ? 16 : 24),
+                Text(
+                  'No Saved Notes',
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w600,
+                    color: _textColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Save notes by clicking the bookmark icon',
+                  style: TextStyle(
+                    color: _subtextColor,
+                    fontSize: isMobile ? 12 : 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: _backgroundColor,
-      appBar: AppBar(
-        backgroundColor: _cardBackground,
-        elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [_accentColor, _accentColor2],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.bookmark_rounded,
-                color: Colors.white,
-                size: 16,
-              ),
+    return Container(
+      color: _backgroundColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Page Header
+          Padding(
+            padding: EdgeInsets.only(
+              left: horizontalPadding,
+              right: horizontalPadding,
+              top: verticalPadding,
+              bottom: isMobile ? 16 : 32,
             ),
-            const SizedBox(width: 10),
-            Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Saved Notes',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 24 : 32,
+                    fontWeight: FontWeight.w700,
                     color: _textColor,
                   ),
                 ),
+                SizedBox(height: isMobile ? 4 : 8),
                 Text(
-                  '${savedNotes.length} items',
+                  '${savedNotes.length} ${savedNotes.length == 1 ? 'note' : 'notes'} saved',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: isMobile ? 12 : 14,
                     color: _subtextColor,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, size: 20),
-            onPressed: () {
-              profileProvider.loadCurrentUserProfile();
-            },
+          ),
+
+          // Grid with proper scrolling
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: isMobile ? 12 : 20,
+                  mainAxisSpacing: isMobile ? 12 : 20,
+                  childAspectRatio: cardAspectRatio,
+                ),
+                itemCount: savedNotes.length,
+                itemBuilder: (context, index) {
+                  final item = savedNotes[index];
+
+                  if (item is Map) {
+                    final map = Map<String, dynamic>.from(item);
+                    final title = map['title']?.toString() ?? 'Untitled';
+                    final subject =
+                        (map['subject'] ?? map['subjectId'] ?? '').toString();
+                    final branch =
+                        (map['branch'] ?? map['branchId'] ?? '').toString();
+                    final fileUrl = map['fileUrl']?.toString();
+                    final noteId = map['noteId']?.toString() ?? '';
+                    final degreeId = map['degreeId']?.toString() ?? '';
+                    final branchId = map['branchId']?.toString() ?? '';
+                    final subjectId = map['subjectId']?.toString() ?? '';
+
+                    return _SavedNoteCard(
+                      title: title,
+                      subject: subject,
+                      branch: branch,
+                      fileUrl: fileUrl,
+                      noteId: noteId,
+                      onOpen: fileUrl == null
+                          ? null
+                          : () => launchUrlString(fileUrl,
+                              mode: LaunchMode.externalApplication),
+                      onRemove: () => _removeNote(
+                        context,
+                        noteId,
+                        title,
+                        degreeId,
+                        branchId,
+                        subjectId,
+                        fileUrl,
+                        profileProvider,
+                      ),
+                      isMobile: isMobile,
+                    );
+                  }
+
+                  return _SavedNoteCard(
+                    title: item.toString(),
+                    subject: '',
+                    branch: '',
+                    fileUrl: null,
+                    noteId: '',
+                    onOpen: null,
+                    onRemove: null,
+                    isMobile: isMobile,
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _getColumnCount(screenWidth),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: _getAspectRatio(screenWidth),
-          ),
-          itemCount: savedNotes.length,
-          itemBuilder: (context, index) {
-            final item = savedNotes[index];
-
-            if (item is Map) {
-              final map = Map<String, dynamic>.from(item);
-              final title = map['title']?.toString() ?? 'Untitled';
-              final subject =
-                  (map['subject'] ?? map['subjectId'] ?? '').toString();
-              final branch =
-                  (map['branch'] ?? map['branchId'] ?? '').toString();
-              final fileUrl = map['fileUrl']?.toString();
-              final noteId = map['noteId']?.toString() ?? '';
-              final degreeId = map['degreeId']?.toString() ?? '';
-              final branchId = map['branchId']?.toString() ?? '';
-              final subjectId = map['subjectId']?.toString() ?? '';
-
-              return _SavedNoteCard(
-                title: title,
-                subject: subject,
-                branch: branch,
-                fileUrl: fileUrl,
-                noteId: noteId,
-                onOpen: fileUrl == null
-                    ? null
-                    : () => launchUrlString(fileUrl,
-                        mode: LaunchMode.externalApplication),
-                onRemove: () => _removeNote(
-                  context,
-                  noteId,
-                  title,
-                  degreeId,
-                  branchId,
-                  subjectId,
-                  fileUrl,
-                  profileProvider,
-                ),
-                backgroundColor: _cardBackground,
-                accentColor: _accentColor,
-                accentColor2: _accentColor2,
-                textColor: _textColor,
-                subtextColor: _subtextColor,
-              );
-            }
-
-            // Fallback for simple string entries
-            return _SavedNoteCard(
-              title: item.toString(),
-              subject: '',
-              branch: '',
-              fileUrl: null,
-              noteId: '',
-              onOpen: null,
-              onRemove: null,
-              backgroundColor: _cardBackground,
-              accentColor: _accentColor,
-              accentColor2: _accentColor2,
-              textColor: _textColor,
-              subtextColor: _subtextColor,
-            );
-          },
-        ),
-      ),
     );
-  }
-
-  int _getColumnCount(double screenWidth) {
-    if (screenWidth < 600) return 2; // Mobile
-    if (screenWidth < 900) return 3; // Tablet
-    if (screenWidth < 1200) return 4; // Small desktop
-    return 5; // Large desktop
-  }
-
-  double _getAspectRatio(double screenWidth) {
-    if (screenWidth < 600) return 0.65; // Taller cards on mobile
-    return 0.7; // Slightly wider on larger screens
   }
 
   Future<void> _removeNote(
@@ -345,26 +296,41 @@ class _SavedNotesPageState extends State<SavedNotesPage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         title: Text(
           'Remove Note?',
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+            color: const Color(0xFF000000),
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
         ),
         content: Text(
           'Remove "$title" from saved notes?',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(
+            color: const Color(0xFF666666),
+            fontSize: 14,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF666666),
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: const Color(0xFF000000),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Remove'),
@@ -395,11 +361,7 @@ class _SavedNoteCard extends StatelessWidget {
   final String noteId;
   final VoidCallback? onOpen;
   final VoidCallback? onRemove;
-  final Color backgroundColor;
-  final Color accentColor;
-  final Color accentColor2;
-  final Color textColor;
-  final Color subtextColor;
+  final bool isMobile;
 
   const _SavedNoteCard({
     required this.title,
@@ -409,197 +371,169 @@ class _SavedNoteCard extends StatelessWidget {
     required this.noteId,
     required this.onOpen,
     required this.onRemove,
-    required this.backgroundColor,
-    required this.accentColor,
-    required this.accentColor2,
-    required this.textColor,
-    required this.subtextColor,
+    required this.isMobile,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color _cardBackground = Colors.white;
+    final Color _accentColor = const Color(0xFF000000);
+    final Color _textColor = const Color(0xFF000000);
+    final Color _subtextColor = const Color(0xFF666666);
+    final Color _borderColor = const Color(0xFFE5E5E0);
+
     return Container(
       decoration: BoxDecoration(
+        color: _cardBackground,
         borderRadius: BorderRadius.circular(12),
-        color: backgroundColor,
         border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-          width: 1,
+          color: _borderColor,
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 6,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onOpen,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Top section with bookmark and menu
-                Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [accentColor, accentColor2],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Icon(
-                        Icons.bookmark_rounded,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (onRemove != null)
-                      GestureDetector(
-                        onTap: onRemove,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Icon(
-                            Icons.more_vert_rounded,
-                            color: subtextColor,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                  ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with bookmark icon
+          Container(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: _borderColor,
+                  width: 1,
                 ),
-
-                // Note title
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.bookmark,
+                  color: _accentColor,
+                  size: isMobile ? 18 : 20,
+                ),
+                SizedBox(width: isMobile ? 8 : 10),
+                Expanded(
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontSize: 13,
+                      color: _textColor,
                       fontWeight: FontWeight.w600,
-                      color: textColor,
+                      fontSize: isMobile ? 13 : 15,
                       height: 1.3,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-
-                // Subject and branch
-                if (subject.isNotEmpty || branch.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
+                if (onRemove != null)
+                  IconButton(
+                    icon: Icon(
+                      Icons.more_vert,
+                      size: isMobile ? 16 : 18,
+                      color: _subtextColor,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.03),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      [branch, subject]
-                          .where((s) => s.isNotEmpty)
-                          .join(' • '),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: subtextColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    onPressed: onRemove,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
-
-                // Action buttons
-                Row(
-                  children: [
-                    // Open button - smaller and compact
-                    Expanded(
-                      child: Container(
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: accentColor.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(6),
-                            onTap: onOpen,
-                            child: Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.open_in_new_rounded,
-                                    color: accentColor,
-                                    size: 12,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Open',
-                                    style: TextStyle(
-                                      color: accentColor,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-
-                    // Remove button - smaller
-                    if (onRemove != null)
-                      GestureDetector(
-                        onTap: onRemove,
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.delete_outline_rounded,
-                            color: Colors.red.withOpacity(0.8),
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
               ],
             ),
           ),
-        ),
+
+          // Subject and branch info
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (branch.isNotEmpty)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 8 : 10,
+                        vertical: isMobile ? 3 : 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F5F0),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        branch,
+                        style: TextStyle(
+                          color: _accentColor,
+                          fontSize: isMobile ? 10 : 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  if (branch.isNotEmpty) SizedBox(height: isMobile ? 6 : 8),
+                  if (subject.isNotEmpty)
+                    Expanded(
+                      child: Text(
+                        subject,
+                        style: TextStyle(
+                          color: _subtextColor,
+                          fontSize: isMobile ? 12 : 13,
+                        ),
+                        maxLines: isMobile ? 2 : 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Open button
+          Padding(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: isMobile ? 36 : 40,
+              child: ElevatedButton(
+                onPressed: onOpen,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: onOpen != null
+                      ? _accentColor
+                      : const Color(0xFFE5E5E0),
+                  foregroundColor: onOpen != null 
+                      ? Colors.white 
+                      : _subtextColor,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.open_in_new,
+                      size: isMobile ? 14 : 16,
+                    ),
+                    SizedBox(width: isMobile ? 6 : 8),
+                    Text(
+                      'Open Note',
+                      style: TextStyle(
+                        fontSize: isMobile ? 12 : 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
