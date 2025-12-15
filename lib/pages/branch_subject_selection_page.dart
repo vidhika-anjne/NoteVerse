@@ -17,7 +17,6 @@ class BranchSubjectSelectionPage extends StatefulWidget {
 class _BranchSubjectSelectionPageState
     extends State<BranchSubjectSelectionPage> {
   String? selectedYear;
-
   String? selectedSemester;
   String? selectedBranchId;
   String? selectedSubjectId;
@@ -83,6 +82,10 @@ class _BranchSubjectSelectionPageState
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 900;
+
     final filteredSubjects = subjects.entries.where((entry) {
       final val = Map<String, dynamic>.from(entry.value);
       final yearMatch = selectedYear == null ||
@@ -118,23 +121,24 @@ class _BranchSubjectSelectionPageState
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(isMobile ? 16 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Progress Indicator
             _buildProgressIndicator(),
-            const SizedBox(height: 32),
+            SizedBox(height: isMobile ? 24 : 32),
 
             // Year Selection
             _buildSectionHeader(
               title: 'Select Year',
               subtitle: 'Choose your academic year',
               icon: Icons.school,
+              isMobile: isMobile,
             ),
-            const SizedBox(height: 16),
-            _buildYearGrid(),
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
+            _buildYearGrid(isMobile),
+            SizedBox(height: isMobile ? 24 : 32),
 
             // Semester Selection
             if (selectedYear != null) ...[
@@ -142,10 +146,11 @@ class _BranchSubjectSelectionPageState
                 title: 'Select Semester',
                 subtitle: 'Choose your current semester',
                 icon: Icons.date_range,
+                isMobile: isMobile,
               ),
-              const SizedBox(height: 16),
-              _buildSemesterGrid(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
+              _buildSemesterGrid(isMobile, isTablet),
+              SizedBox(height: isMobile ? 24 : 32),
             ],
 
             // Branch Selection
@@ -154,10 +159,11 @@ class _BranchSubjectSelectionPageState
                 title: 'Select Branch',
                 subtitle: 'Choose your department',
                 icon: Icons.architecture,
+                isMobile: isMobile,
               ),
-              const SizedBox(height: 16),
-              _buildBranchGrid(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
+              _buildBranchGrid(isMobile, isTablet),
+              SizedBox(height: isMobile ? 24 : 32),
             ],
 
             // Subject Selection
@@ -166,20 +172,21 @@ class _BranchSubjectSelectionPageState
                 title: 'Select Subject',
                 subtitle: 'Choose your subject',
                 icon: Icons.menu_book,
+                isMobile: isMobile,
               ),
-              const SizedBox(height: 16),
-              _buildSubjectGrid(filteredSubjects),
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
+              _buildSubjectGrid(filteredSubjects, isMobile, isTablet),
+              SizedBox(height: isMobile ? 24 : 32),
             ],
 
             // Continue Button
             if (selectedBranchId != null && selectedSubjectId != null) ...[
-              _buildContinueButton(),
-              const SizedBox(height: 20), // Extra padding at bottom
+              _buildContinueButton(isMobile),
+              const SizedBox(height: 16),
             ],
 
-            // Add some extra space at the bottom to ensure scrolling works
-            const SizedBox(height: 40),
+            // Add some extra space at the bottom
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -200,15 +207,15 @@ class _BranchSubjectSelectionPageState
           value: completedSteps / totalSteps,
           backgroundColor: const Color(0xFF334155),
           valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-          borderRadius: BorderRadius.circular(10),
-          minHeight: 8,
+          borderRadius: BorderRadius.circular(8),
+          minHeight: 6,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           'Step $completedSteps of $totalSteps',
           style: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 12,
+            fontSize: 11,
           ),
         ),
       ],
@@ -219,37 +226,38 @@ class _BranchSubjectSelectionPageState
     required String title,
     required String subtitle,
     required IconData icon,
+    required bool isMobile,
   }) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: const Color(0xFF10B981).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: const Color(0xFF10B981).withOpacity(0.3),
             ),
           ),
-          child: Icon(icon, color: const Color(0xFF10B981), size: 20),
+          child: Icon(icon, color: const Color(0xFF10B981), size: isMobile ? 16 : 18),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: isMobile ? 16 : 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 12,
+              style: TextStyle(
+                color: const Color(0xFF94A3B8),
+                fontSize: isMobile ? 11 : 12,
               ),
             ),
           ],
@@ -258,15 +266,19 @@ class _BranchSubjectSelectionPageState
     );
   }
 
-  Widget _buildYearGrid() {
+  Widget _buildYearGrid(bool isMobile) {
+    final double height = isMobile ? 60 : 70;
+    final double spacing = isMobile ? 8 : 10;
+    final double aspectRatio = isMobile ? 0.8 : 0.7;
+
     return SizedBox(
-      height: 80, // Fixed height for year grid
+      height: height,
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.7,
+          mainAxisSpacing: spacing,
+          childAspectRatio: aspectRatio,
         ),
         itemCount: yearOptions.length,
         itemBuilder: (context, index) {
@@ -275,6 +287,7 @@ class _BranchSubjectSelectionPageState
           return _buildSelectionCard(
             title: 'Year $year',
             isSelected: isSelected,
+            isMobile: isMobile,
             onTap: () {
               setState(() {
                 selectedYear = year;
@@ -290,15 +303,19 @@ class _BranchSubjectSelectionPageState
     );
   }
 
-  Widget _buildSemesterGrid() {
+  Widget _buildSemesterGrid(bool isMobile, bool isTablet) {
+    final crossAxisCount = _getCrossAxisCount(isMobile, isTablet);
+    final double spacing = isMobile ? 8 : 10;
+    final double aspectRatio = isMobile ? 2.2 : (isTablet ? 2.5 : 3);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 2.5,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
+        childAspectRatio: aspectRatio,
       ),
       itemCount: semesterOptions.length,
       itemBuilder: (context, index) {
@@ -308,6 +325,7 @@ class _BranchSubjectSelectionPageState
           title: 'Semester $semester',
           subtitle: 'Year $selectedYear',
           isSelected: isSelected,
+          isMobile: isMobile,
           onTap: () {
             setState(() {
               selectedSemester = semester;
@@ -320,15 +338,19 @@ class _BranchSubjectSelectionPageState
     );
   }
 
-  Widget _buildBranchGrid() {
+  Widget _buildBranchGrid(bool isMobile, bool isTablet) {
+    final crossAxisCount = _getCrossAxisCount(isMobile, isTablet);
+    final double spacing = isMobile ? 8 : 10;
+    final double aspectRatio = isMobile ? 1.2 : (isTablet ? 1.5 : 1.8);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.5,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
+        childAspectRatio: aspectRatio,
       ),
       itemCount: branches.entries.length,
       itemBuilder: (context, index) {
@@ -338,6 +360,7 @@ class _BranchSubjectSelectionPageState
           title: branch.value['name'] ?? branch.key,
           subtitle: 'Department',
           isSelected: isSelected,
+          isMobile: isMobile,
           onTap: () async {
             setState(() {
               selectedBranchId = branch.key;
@@ -351,38 +374,42 @@ class _BranchSubjectSelectionPageState
     );
   }
 
-  Widget _buildSubjectGrid(List<MapEntry<String, dynamic>> filteredSubjects) {
+  Widget _buildSubjectGrid(
+    List<MapEntry<String, dynamic>> filteredSubjects,
+    bool isMobile,
+    bool isTablet,
+  ) {
     if (filteredSubjects.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: const Color(0xFF1A2332),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFF334155)),
         ),
         child: Column(
           children: [
             Icon(
               Icons.search_off,
-              size: 48,
+              size: isMobile ? 32 : 40,
               color: Colors.grey.shade600,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            const SizedBox(height: 12),
+            Text(
               'No subjects found',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'No subjects available for Year $selectedYear, Semester $selectedSemester',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 12,
+              style: TextStyle(
+                color: const Color(0xFF94A3B8),
+                fontSize: isMobile ? 10 : 12,
               ),
             ),
           ],
@@ -390,14 +417,18 @@ class _BranchSubjectSelectionPageState
       );
     }
 
+    final crossAxisCount = _getCrossAxisCount(isMobile, isTablet);
+    final double spacing = isMobile ? 8 : 10;
+    final double aspectRatio = isMobile ? 1.5 : (isTablet ? 1.8 : 2);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.8,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
+        childAspectRatio: aspectRatio,
       ),
       itemCount: filteredSubjects.length,
       itemBuilder: (context, index) {
@@ -409,6 +440,7 @@ class _BranchSubjectSelectionPageState
           title: subjectData['name'] ?? subject.key,
           subtitle: 'Subject',
           isSelected: isSelected,
+          isMobile: isMobile,
           onTap: () {
             setState(() {
               selectedSubjectId = subject.key;
@@ -419,27 +451,34 @@ class _BranchSubjectSelectionPageState
     );
   }
 
+  int _getCrossAxisCount(bool isMobile, bool isTablet) {
+    if (isMobile) return 2;
+    if (isTablet) return 3;
+    return 4;
+  }
+
   Widget _buildSelectionCard({
     required String title,
     String? subtitle,
     required bool isSelected,
+    required bool isMobile,
     required VoidCallback onTap,
   }) {
     return Card(
-      elevation: 2,
+      elevation: 1,
       color: isSelected ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFF1A2332),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         side: BorderSide(
           color: isSelected ? const Color(0xFF10B981) : const Color(0xFF334155),
-          width: isSelected ? 2 : 1,
+          width: isSelected ? 1.5 : 1,
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(isMobile ? 10 : 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,19 +487,19 @@ class _BranchSubjectSelectionPageState
                 title,
                 style: TextStyle(
                   color: isSelected ? const Color(0xFF10B981) : Colors.white,
-                  fontSize: 14,
+                  fontSize: isMobile ? 12 : 13,
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               if (subtitle != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 11,
+                  style: TextStyle(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: isMobile ? 9 : 10,
                   ),
                 ),
               ],
@@ -469,7 +508,7 @@ class _BranchSubjectSelectionPageState
                 Align(
                   alignment: Alignment.centerRight,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(3),
                     decoration: const BoxDecoration(
                       color: Color(0xFF10B981),
                       shape: BoxShape.circle,
@@ -477,7 +516,7 @@ class _BranchSubjectSelectionPageState
                     child: const Icon(
                       Icons.check,
                       color: Colors.white,
-                      size: 12,
+                      size: 10,
                     ),
                   ),
                 ),
@@ -489,7 +528,7 @@ class _BranchSubjectSelectionPageState
     );
   }
 
-  Widget _buildContinueButton() {
+  Widget _buildContinueButton(bool isMobile) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -498,12 +537,12 @@ class _BranchSubjectSelectionPageState
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(isMobile ? 10 : 12),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF10B981).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -531,21 +570,21 @@ class _BranchSubjectSelectionPageState
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 14 : 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(isMobile ? 10 : 12),
           ),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.arrow_forward, color: Colors.white, size: 20),
-            SizedBox(width: 8),
+            Icon(Icons.arrow_forward, color: Colors.white, size: isMobile ? 18 : 20),
+            SizedBox(width: isMobile ? 6 : 8),
             Text(
               'View Notes',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -34,8 +34,16 @@ class UserPublicProfilePage extends StatelessWidget {
         final bio = userData["bio"] ?? "No bio added";
         final gender = userData["gender"] ?? "Not specified";
         final photoUrl = userData["photoUrl"] ?? "";
-        final rating = (userData["rating"] ?? 0).toDouble();
-        final uploads = userData["uploads"] ?? 0;
+        final String email = userData["email"] ?? "";
+        final String linkedin = userData["linkedin"] ?? "";
+        final int createdAtMillis = userData["createdAt"] is int
+            ? userData["createdAt"] as int
+            : int.tryParse('${userData["createdAt"] ?? ''}') ?? 0;
+        final DateTime? createdAt = createdAtMillis > 0
+            ? DateTime.fromMillisecondsSinceEpoch(createdAtMillis)
+            : null;
+        final double rating = (userData["rating"] ?? 0).toDouble();
+        final int uploads = userData["uploads"] ?? 0;
 
         return Scaffold(
           appBar: AppBar(title: Text("@$username")),
@@ -67,12 +75,55 @@ class UserPublicProfilePage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                Text(bio,
-                    textAlign: TextAlign.center,
-                    style:
-                        const TextStyle(fontSize: 15, color: Colors.grey)),
+                // ---------------- Extra Details ----------------
+                if (email.isNotEmpty) ...[
+                  Text(
+                    email,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Gender: $gender',
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.grey),
+                      ),
+                      if (linkedin.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'LinkedIn: $linkedin',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                      if (createdAt != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Member since: ${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 20),
+
+                if (bio.isNotEmpty) ...[
+                  Text(bio,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                  const SizedBox(height: 20),
+                ],
 
                 // ⭐ Rating & uploads
                 Row(

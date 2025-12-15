@@ -55,6 +55,17 @@ class _ProfilePageState extends State<ProfilePage> {
         profileData["email"] ?? auth.firebaseUser?.email ?? "No Email";
     final String role = profileData["role"] ?? "student";
     final String photoUrl = profileData["photoUrl"] ?? "";
+    final String username = profileData["username"] ?? "";
+    final String gender = profileData["gender"] ?? "Not specified";
+    final String linkedin = profileData["linkedin"] ?? "";
+    final String bio = profileData["bio"] ?? "";
+    final int createdAtMillis = profileData["createdAt"] is int
+        ? profileData["createdAt"] as int
+        : int.tryParse('${profileData["createdAt"] ?? ''}') ?? 0;
+    final DateTime? createdAt = createdAtMillis > 0
+        ? DateTime.fromMillisecondsSinceEpoch(createdAtMillis)
+        : null;
+    final int savedCount = profileProvider.savedNotes.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -70,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
               radius: 55,
               backgroundColor: Colors.grey.shade300,
               backgroundImage:
-              photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+                  photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
               child: photoUrl.isEmpty
                   ? const Icon(Icons.person, size: 55)
                   : null,
@@ -88,8 +99,22 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 6),
 
+            if (username.isNotEmpty)
+              Text(
+                '@$username',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+
+            const SizedBox(height: 6),
+
             // ---------------- Email ----------------
-            Text(email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+            Text(
+              email,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
 
             const SizedBox(height: 20),
 
@@ -97,6 +122,62 @@ class _ProfilePageState extends State<ProfilePage> {
             Chip(
               label: Text(role.toUpperCase()),
               backgroundColor: Colors.blue.shade100,
+            ),
+
+            const SizedBox(height: 20),
+
+            // ---------------- Extra Details ----------------
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (bio.isNotEmpty) ...[
+                    const Text(
+                      'Bio',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      bio,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  Text(
+                    'Gender: $gender',
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  if (linkedin.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'LinkedIn: $linkedin',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Saved notes: $savedCount',
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  if (createdAt != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Member since: ${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                      style: const TextStyle(
+                          fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ],
+              ),
             ),
 
             const Spacer(),
