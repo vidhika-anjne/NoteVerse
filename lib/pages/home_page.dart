@@ -8,7 +8,14 @@ import 'branch_subject_selection_page.dart';
 import 'saved_notes.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final VoidCallback? onNavigateToBrowse;
+  final VoidCallback? onNavigateToUpload;
+
+  const HomePage({
+    super.key,
+    this.onNavigateToBrowse,
+    this.onNavigateToUpload,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -109,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                         runSpacing: 8,
                         children: [
                           ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: widget.onNavigateToUpload ?? () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -133,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           OutlinedButton.icon(
-                            onPressed: () {
+                            onPressed: widget.onNavigateToBrowse ?? () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

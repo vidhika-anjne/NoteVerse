@@ -5,11 +5,15 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import '../config/webconfig.dart';
 
 class CloudinaryService {
-  final String? cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
-  final String? uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
+  // final String? cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'];
+  // final String? uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET'];
+
+  final String? cloudName = cloudinaryCloudName();
+  final String? uploadPreset = cloudinaryUploadPreset();
 
   /// Uploads any file (PDF, DOCX, etc.)
   Future<String?> uploadFile({
@@ -22,9 +26,8 @@ class CloudinaryService {
     }
 
     final uri = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/raw/upload');
-
     final request = http.MultipartRequest('POST', uri)
-      ..fields['upload_preset'] = uploadPreset!
+      ..fields['upload_preset'] = cloudinaryUploadPreset()
       ..files.add(
         http.MultipartFile.fromBytes(
           'file',

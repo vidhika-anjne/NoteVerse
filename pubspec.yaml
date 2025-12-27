@@ -55,7 +55,7 @@ dependencies:
   audioplayers: ^6.5.1
   flutter_tts: ^3.8.5
   pdf_text_extract: ^0.0.1
-
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

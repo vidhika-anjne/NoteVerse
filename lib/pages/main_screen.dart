@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:notes_sharing/pages/saved_notes.dart';
 import 'branch_subject_selection_page.dart';
 import 'notes_list_page.dart';
 import 'profile_page.dart';
-import 'saved_notes.dart';
 import 'home_page.dart';
+import '../providers/auth_provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,12 +21,23 @@ class _MainScreenState extends State<MainScreen> {
   String? _notesBranchId;
   String? _notesSubjectId;
 
-  final List<Widget> _pages = const [
-    HomePage(),
-    BranchSubjectSelectionPage(),
-    SavedNotesPage(),
-    ProfilePage(),
-  ];
+  void _navigateToIndex(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  List<Widget> _getPages() {
+    return [
+      HomePage(
+        onNavigateToBrowse: () => _navigateToIndex(1),
+        onNavigateToUpload: () => _navigateToIndex(1),
+      ),
+      BranchSubjectSelectionPage(),
+      SavedNotesPage(),
+      ProfilePage(),
+    ];
+  }
 
   final List<String> _titles = const [
     "Home",
@@ -83,7 +95,7 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'NotesApp',
+                        'NoteVerse',
                         style: TextStyle(
                           color: _textColor,
                           fontSize: 20,
@@ -103,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
                         icon: _icons[index],
                         title: _titles[index],
                         isSelected: _currentIndex == index,
-                        onTap: () => setState(() => _currentIndex = index),
+                        onTap: () => _navigateToIndex(index),
                       );
                     }),
                   ),
@@ -176,6 +188,19 @@ class _MainScreenState extends State<MainScreen> {
                           iconSize: 20,
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _borderColor),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.logout, color: _textColor),
+                          onPressed: () => _showLogoutDialog(context),
+                          iconSize: 20,
+                          tooltip: 'Logout',
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -205,6 +230,13 @@ class _MainScreenState extends State<MainScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: _textColor),
+            onPressed: () => _showLogoutDialog(context),
+            tooltip: 'Logout',
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
@@ -226,7 +258,7 @@ class _MainScreenState extends State<MainScreen> {
             children: List.generate(_titles.length, (index) {
               return Expanded(
                 child: InkWell(
-                  onTap: () => setState(() => _currentIndex = index),
+                  onTap: () => _navigateToIndex(index),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Column(
@@ -290,7 +322,59 @@ class _MainScreenState extends State<MainScreen> {
       }
     }
 
-    return _pages[_currentIndex];
+    return _getPages()[_currentIndex];
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title: Text(
+          'Logout?',
+          style: TextStyle(
+            color: _textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(
+            color: _subtextColor,
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: _subtextColor,
+            ),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _accentColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () async {
+              Navigator.pop(context);
+              final authProvider = context.read<AuthProvider>();
+              await authProvider.signOut();
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

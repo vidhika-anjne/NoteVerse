@@ -1,32 +1,32 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import '../config/gemini_webconfig.dart';
 
 class GeminiService {
-  final String? _apiKey = dotenv.env['GEMINI_API_KEY'];
-
   Future<String> summarizeText(String text) async {
-    if (_apiKey == null || _apiKey!.isEmpty) {
-      print("❌ Gemini API key not found.");
-      return "API key missing";
-    }
-
-    final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$_apiKey',
-    );
-
     try {
+      final apiKey = geminiApiKey();
+      if (apiKey == null || apiKey.isEmpty || apiKey == 'your_gemini_api_key_here') {
+        debugPrint('Gemini API key not configured');
+        return 'API key not configured';
+      }
+
+      final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey',
+      );
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "contents": [
+          'contents': [
             {
-              "parts": [
+              'parts': [
                 {
-                  "text":
-                  "Read and summarize the contents of the file for study notes to be understood and learnt easily.\n"
-                      "Output only plain text without any Markdown formatting, headings, or special symbols:\n$text",
+                  'text':
+                      'Read and summarize the contents of the file for study notes to be understood and learnt easily.\n'
+                      'Output only plain text without any Markdown formatting, headings, or special symbols:\n$text',
                 }
               ]
             }
@@ -34,21 +34,18 @@ class GeminiService {
         }),
       );
 
-      print("➡️ Status Code: ${response.statusCode}");
-      print("➡️ Response Body: ${response.body}");
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final summary =
         data['candidates']?[0]?['content']?['parts']?[0]?['text'];
-        return summary ?? "No summary generated.";
+        return summary ?? 'No summary generated';
       } else {
-        return "Failed to summarize. Status: ${response.statusCode}";
+        debugPrint('HTTP Error: ${response.statusCode}');
+        return 'Failed to summarize. Status: ${response.statusCode}';
       }
-    } catch (e, stackTrace) {
-      print("❌ Exception occurred: $e");
-      print(stackTrace);
-      return "Error occurred while summarizing text.";
+    } catch (e) {
+      debugPrint('Error summarizing text: $e');
+      return 'Error occurred while summarizing text.';
     }
   }
 }
